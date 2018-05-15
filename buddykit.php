@@ -12,6 +12,6 @@
  */
 
 define('BUDDYKIT_PATH', trailingslashit( plugin_dir_path(__FILE__) ));
-define('BUDDYKIT_ASSET_URI', trailingslashit( plugin_dir_url( __FILE__ ) . '/src/public/js/'  ));
+define('BUDDYKIT_PUBLIC_URI', trailingslashit( plugin_dir_url( __FILE__ ) . '/src/public/'  ));
 
 require_once BUDDYKIT_PATH . 'src/includes/media/class-media.php';
