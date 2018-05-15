@@ -16,33 +16,32 @@ jQuery(document).ready(function($){
 				{title : "Zip files", extensions : "zip"}
 			]**/
 		},
+		headers: {
+			'X-WP-Nonce': __buddyKit.nonce
+		},
 		init: {
 			PostInit: function() {
-				document.getElementById('filelist').innerHTML = '';
-				document.getElementById('start-upload').onclick = function() {
-					uploader.start();
-					return false;
-				};
+			
 			},
 		
 			FilesAdded: function(up, files) {
 				plupload.each(files, function(file) {
 					document.getElementById('filelist').innerHTML += '<div id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
 				});
+				uploader.start();
 			},
 
 			FileUploaded: function(up, files) {
-				console.log(up);
-				console.log(files);
+				//console.log(up);
+				//console.log(files);
 			},
 
 			UploadProgress: function(up, file) {
 				document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
 			},
 			
-			UploadComplete: function(up, files) {
-				//console.log(up);
-				//console.log(files);
+			UploadComplete: function(up, files, response) {
+
 			},
 
 			Error: function(up, err) {
