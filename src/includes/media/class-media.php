@@ -1,28 +1,65 @@
 <?php
 // We need to register REST API End Point
 add_action( 'rest_api_init', function () {
-    register_rest_route( 'buddykit/v1', '/author/(?P<id>\d+)', array(
+    register_rest_route( 'buddykit/v1', '/activity-new', array(
         'methods' => 'POST',
-        'callback' => 'my_awesome_func',
+        'callback' => 'buddykit_activity_route_endpoint',
     ) );
 } );
 
 // Enqueue the script needed
 add_action( 'wp_enqueue_scripts', 'buddykit_register_scripts' );
 
-function my_awesome_func() {
+/**
+ * Handle multiple file uploads
+ * @return object instance of WP_REST_Response
+ */
+function buddykit_activity_route_endpoint() {
 
+    // Bail out if files is empty
     if (empty($_FILES) || $_FILES["file"]["error"]) {
-        die('{"OK": 0}');
+        $response = new WP_REST_Response(
+            array('message' => 'Error: File is empty')
+        );
+    }
+    // Include WordPress' file that declares 'wp_handle_upload'
+    if ( ! function_exists( 'wp_handle_upload' ) ) {
+        require_once( ABSPATH . 'wp-admin/includes/file.php' );
     }
 
-    $fileName = $_FILES["file"]["name"];
+    $uploadedfile = $_FILES['file'];
     
-    move_uploaded_file($_FILES["file"]["tmp_name"], "uploads/$fileName");
+    $upload_overrides = array( 'test_form' => false );
 
-    die('{"OK": 1}');
+    $movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
 
-    return new WP_REST_Response(array('message' => 'this is a test'));
+    if ( $movefile && ! isset( $movefile['error'] ) ) {
+        
+        $args = array(
+            'action' => 'Test uploaded a new media',
+            'content' => '<img src="'.$movefile['url'].'" />',
+            'component' => 'activity',
+            'type' => 'buddykit-media',
+            'primary_link' => false,
+            'user_id' => 1,
+        );
+
+        //Create new activity
+        $activity_id = bp_activity_add( $args );
+
+        $response = new WP_REST_Response(
+            array('message' => 'File successfully uploaded')
+        );
+
+    } else {
+        $response = new WP_REST_Response(
+            array(
+                'message' => $movefile['error'] 
+                )
+        );
+    }
+
+    return $response;
 
 }
 

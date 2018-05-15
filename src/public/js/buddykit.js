@@ -1,27 +1,54 @@
 jQuery(document).ready(function($){
 	
-	var uploadTemplate = "";
-
 	var uploader = new plupload.Uploader({
-		browse_button: document.getElementById('browse'), // this can be an id of a DOM element or the DOM element itself
-		url: 'http://thrive.dsc/wp-json/buddykit/v1/author/1'
-	});
+		runtimes : 'html5',
+		browse_button : 'browse', // you can pass an id...
+		container: document.getElementById('container'), // ... or DOM Element itself
+		url : 'http://localhost/thrive/wp-json/buddykit/v1/activity-new',
+		//flash_swf_url : '../js/Moxie.swf',
+		//silverlight_xap_url : '../js/Moxie.xap',
+	
+		filters : {
+			//max_file_size : '10mb',
+			/**
+			mime_types: [
+				{title : "Image files", extensions : "jpg,gif,png"},
+				{title : "Zip files", extensions : "zip"}
+			]**/
+		},
+		init: {
+			PostInit: function() {
+				document.getElementById('filelist').innerHTML = '';
+				document.getElementById('start-upload').onclick = function() {
+					uploader.start();
+					return false;
+				};
+			},
+		
+			FilesAdded: function(up, files) {
+				plupload.each(files, function(file) {
+					document.getElementById('filelist').innerHTML += '<div id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
+				});
+			},
 
-	uploader.bind('FilesAdded', function(up, files) {
-		var html = '';
-		plupload.each(files, function(file) {
-			html += '<li id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></li>';
-		});
-		document.getElementById('filelist').innerHTML += html;
-	});
+			FileUploaded: function(up, files) {
+				console.log(up);
+				console.log(files);
+			},
 
-	uploader.bind('UploadProgress', function(up, file) {
-		document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
-	});
+			UploadProgress: function(up, file) {
+				document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
+			},
+			
+			UploadComplete: function(up, files) {
+				//console.log(up);
+				//console.log(files);
+			},
 
-	uploader.init();
-
-	document.getElementById('start-upload').onclick = function() {
-		uploader.start();
-	};
+			Error: function(up, err) {
+				document.getElementById('console').appendChild(document.createTextNode("\nError #" + err.code + ": " + err.message));
+			}
+	}
+});
+uploader.init();
 });
