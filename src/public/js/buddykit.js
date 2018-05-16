@@ -107,11 +107,11 @@ jQuery(document).ready(function($){
 			PostInit: function() {},
 			FilesAdded: function(up, files) {
 				plupload.each(files, function(file) {
-					document.getElementById(__buddyKit.file_list_container_id ).innerHTML += '<li class="buddykit-filelist-item">' + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
+					document.getElementById(__buddyKit.file_list_container_id ).innerHTML += '<li id="'+file.id+'" class="buddykit-filelist-item">' + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
 				});
 				uploader.start();
 			},
-			FileUploaded: function(up, file, response) {
+			FileUploaded: function(up, file, response) { 
 				
 				if (200 === response.status) {
 
@@ -125,12 +125,12 @@ jQuery(document).ready(function($){
 							user_id: __buddyKit.current_user_id,
 							type: file.type
 						});
-
+					$('#'+file.id).remove();
 					buddyKitFiles.add( buddykitFile );
 				}
 			},
 			UploadProgress: function(up, file) {
-				//document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
+				document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
 			},
 			UploadComplete: function(up, files, response) {
 

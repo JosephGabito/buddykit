@@ -71,6 +71,7 @@ function buddykit_activity_route_endpoint() {
     $result = $fs->process_http_file();
     
     $http_response['image'] = $result;
+    
     return new WP_REST_Response($http_response);
 
 }
