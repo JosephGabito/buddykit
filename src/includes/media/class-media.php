@@ -70,8 +70,7 @@ function buddykit_activity_route_endpoint() {
     // See includes/media/class-file-attachment.php
     $result = $fs->process_http_file();
     
-    $http_response['message'] = 'test';
-    $http_response['__debug'] = $result;
+    $http_response['image'] = $result;
     return new WP_REST_Response($http_response);
 
 }
@@ -118,14 +117,14 @@ function buddykit_register_scripts() {
     
     wp_enqueue_style( 'buddykit-style', BUDDYKIT_PUBLIC_URI . 'css/buddykit.css', false );
 
-    wp_enqueue_script( 'buddykit-src', BUDDYKIT_PUBLIC_URI . 'js/buddykit-upload-collection.js', 
-        array('plupload-html5', 'backbone', 'underscore'), false );
+    wp_enqueue_script( 'buddykit-src', BUDDYKIT_PUBLIC_URI . 'js/buddykit.js', array('plupload-html5', 'backbone', 'underscore'), false );
 
     wp_localize_script( 'buddykit-src', '__buddyKit', array(
         'root' => esc_url_raw( rest_url() ),
         'nonce' => wp_create_nonce( 'wp_rest' ),
         'rest_upload_uri' => get_rest_url( null, 'buddykit/v1/', 'rest'),
-        'file_list_container_id' => 'buddykit-filelist'
+        'file_list_container_id' => 'buddykit-filelist',
+        'current_user_id' => get_current_user_id()
     ));
 
     wp_enqueue_script('buddykit-wp-api');
