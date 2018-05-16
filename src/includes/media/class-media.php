@@ -21,11 +21,11 @@ function buddykit_append_form( $content ) {
     ?>
     <?php $files = buddykit_get_user_uploaded_files(); ?>
     
-        <ul id="filelist">
+        <ul id="buddykit-filelist">
             <?php foreach($files as $file) { ?>
-                <li>
-                    <img width="150" src="http://localhost/thrive/wp-content/uploads/buddykit/1/tmp/<?php echo $file; ?>" />
-                    <a href="#"> (&times; Delete) </a>
+                <li class="buddykit-filelist-item">
+                    <img width="150" src="<?php echo buddykit_get_user_temporary_files_url( $file ); ?>" />
+                    <a class="buddykit-filelist-item-delete" href="#"> &times; </a>
                 </li>
             <?php } ?>
         </ul>
@@ -43,11 +43,14 @@ function buddykit_append_form( $content ) {
 
 function buddykit_get_user_uploaded_files() {
 
-    $dir = wp_upload_dir();
+    $dir   = wp_upload_dir();
+    $files = array();
 
     $tmp_dir = $dir['basedir'] . '/buddykit/' . get_current_user_id() . '/tmp/';
-
-    $files = preg_grep('/^([^.])/',  scandir( $tmp_dir, 1 ) );
+    
+    if ( is_dir($tmp_dir) ) {
+        $files = preg_grep('/^([^.])/',  scandir( $tmp_dir, 0 ) );
+    }
     
     return array_diff($files, array('.','..'));
 
@@ -70,13 +73,10 @@ function buddykit_activity_route_endpoint() {
 
     // Reads the global $_FILE request.
     // See includes/media/class-file-attachment.php
-    print_r($_REQUEST);
     $result = $fs->process_http_file();
     
     $http_response['message'] = 'test';
     $http_response['__debug'] = $result;
-
-
     return new WP_REST_Response($http_response);
 
 }
@@ -89,15 +89,52 @@ function buddykit_register_scripts() {
     
     wp_enqueue_style( 'buddykit-style', BUDDYKIT_PUBLIC_URI . 'css/buddykit.css', false );
 
-    wp_enqueue_script( 'buddykit-src', BUDDYKIT_PUBLIC_URI . 'js/buddykit.js', array('plupload-html5'), false );
-    
+    wp_enqueue_script( 'buddykit-collection', BUDDYKIT_PUBLIC_URI . 'js/buddykit-upload-collection.js', 
+        array('plupload-html5', 'backbone', 'underscore'), false );
+
+
     wp_localize_script( 'buddykit-src', '__buddyKit', array(
         'root' => esc_url_raw( rest_url() ),
-        'nonce' => wp_create_nonce( 'wp_rest' )
-    ) );    
+        'nonce' => wp_create_nonce( 'wp_rest' ),
+        'rest_upload_uri' => get_rest_url( null, 'buddykit/v1/activity-new', 'rest'),
+        'file_list_container_id' => 'buddykit-filelist'
+    ));
 
     wp_enqueue_script('buddykit-wp-api');
 
     return;
 }
 
+/**
+ * Returns the temporary url for the given file
+ * @return string The temporary url of file.
+ */
+function buddykit_get_user_temporary_files_url( $file = '' ) {
+    
+    $url = buddykit_get_user_upload_dir( $tmp = true );
+    
+    if ( empty( $file ) ) {
+        return false;        
+    }
+
+    return $url . $file;
+}
+
+/**
+ * Fetches the current user's upload directory
+ * @param boolean $is_temporary Whether you want to getch the temporary file or not
+ * 
+ * @return string The current user upload directory.
+ */
+function buddykit_get_user_upload_dir( $is_temporary = false )
+{
+    $dir = wp_upload_dir();
+
+    $url = trailingslashit( $dir['baseurl'] ) . sprintf('buddykit/%d/', get_current_user_id());
+
+    if ( $is_temporary ) {
+        return trailingslashit( $url . 'tmp' );
+    }
+
+    return trailingslashit( $url . 'uploaded' );
+}
