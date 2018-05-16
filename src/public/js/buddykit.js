@@ -50,7 +50,7 @@ jQuery(document).ready(function($){
 			e.preventDefault();
 			
 			var modelId = e.target.getAttribute('data-model-id');
-			var fileName = e.target.getAttribute('data-file-name');
+			var fileId = e.target.getAttribute('data-file-id');
 
 
 			//buddyKitFiles.remove(modelId);
@@ -63,10 +63,7 @@ jQuery(document).ready(function($){
 				error: function(model, response) {
 					console.log(response);
 				},
-				data: {
-					file_name: fileName,
-				},
-				url: __buddyKit.rest_upload_uri + 'user-temporary-media-delete/' + fileName
+				url: __buddyKit.rest_upload_uri + 'user-temporary-media-delete/' + fileId
 			});
 
 		},

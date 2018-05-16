@@ -142,10 +142,10 @@ class BuddyKitFileAttachment {
 		    require_once( ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php' );
 		}
 
-		$fs = new WP_Filesystem_Direct( $args );
+		$fs = new WP_Filesystem_Direct( $args = array() );
 
 		// Start deleting the file.
-		$fs->delete( $this->get_current_user_file_path( $task_id, $file_name ) );
+		$fs->delete( $this->get_current_user_file_path( $file_name, $is_tmp = true ) );
 
 	}
 
@@ -192,11 +192,8 @@ class BuddyKitFileAttachment {
 	 * @param  string $name    The task file name.
 	 * @return boolean          The current directory path of the current logged-in user.
 	 */
-	public function get_current_user_file_path( $task_id = '', $name = '' ) {
+	public function get_current_user_file_path( $name = '', $is_tmp = false ) {
 
-		if ( ! empty( $task_id ) ) {
-			return false;
-		}
 		if ( ! empty( $name ) ) {
 			return false;
 		}
@@ -204,8 +201,10 @@ class BuddyKitFileAttachment {
 		$path = wp_upload_dir();
 
 		$upload_dir = $path['basedir'] . '/buddykit/';
+		
+		$uploads = $is_tmp ? 'tmp': 'uploads';
 
-		$file = sprintf( '%1$s/%2$d/tasks/%3$d/%4$d', $upload_dir, absint( get_current_user_id() ), absint( $task_id ), sanitize_file_name( $name ) );
+		$file = sprintf( '%1$s/%2$d/%3$d/%4$d', $upload_dir, absint( get_current_user_id() ), $uploads, $name );
 
 		return $file;
 

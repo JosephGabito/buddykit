@@ -17,7 +17,7 @@ add_action( 'rest_api_init', function () {
     ) );
 
     register_rest_route( 'buddykit/v1', '/user-temporary-media-delete/(?P<id>\d+)', array(
-        'methods' => 'GET',
+        'methods' => 'DELETE',
         'callback' => 'buddykit_user_temporary_media_delete_endpoint'
     ) );
 
@@ -25,18 +25,44 @@ add_action( 'rest_api_init', function () {
 
 function buddykit_user_temporary_media_delete_endpoint(WP_REST_Request $request) {
     
-    $parameters = $request->get_params();
- 
+    global $wpdb;
+
+    $params = $request->get_params();
+    $file_id = 0;
+    if ( !empty ($params['id'])) {
+        $file_id = $params['id'];
+    }
+    $stmt = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files WHERE id = %d;", absint($file_id));
+    $file = $wpdb->get_row( $stmt, OBJECT );
+
+    //Delete from record
+    $deleted = $wpdb->delete( 
+        $wpdb->prefix.'buddykit_user_files', 
+        array( 'id' => absint($file_id) ), 
+        array( '%d' ) 
+    );
+
+    if ( $deleted ) {
+        // Delete the file in the tmp
+        if ( ! class_exists('BuddyKitFileAttachment') ) {
+            require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';;
+        }
+        $fs = new BuddyKitFileAttachment();
+        $fs->delete_file($file->name);
+    } else {
+        print_r( $file_id );
+        echo 'There was an error';
+    }
     return new WP_REST_Response(array(
             'test' => 'form',
-            'file' => $parameters
+            'file' => $file_id
         ));
 }
 
 function buddykit_user_temporary_media_endpoint() {
     
     $final = array();
-    
+
     $user_temporary_files = buddykit_get_user_uploaded_files();
 
     if ( ! empty( $user_temporary_files ) ) {
@@ -183,7 +209,7 @@ function buddykit_append_form( $content ) {
 
         <li class="buddykit-filelist-item">
             <img width="150" src="<%= public_url %>" alt="<%= name %>">
-            <a data-file-name="<%= name %>" data-model-id="<%= this.id %>" title="<%= name %>" class="buddykit-filelist-item-delete" href="#"> × </a>
+            <a data-file-id="<%= ID %>" data-model-id="<%= this.id %>" title="<%= name %>" class="buddykit-filelist-item-delete" href="#"> × </a>
         </li>
 
     </script>
