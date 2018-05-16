@@ -38,3 +38,6 @@ ul#buddykit-filelist li.buddykit-filelist-item:hover
 ul#buddykit-filelist li.buddykit-filelist-item > a.buddykit-filelist-item-delete:hover {
     opacity: 1;
 }
+.buddykit-info {
+    display: none;
+}

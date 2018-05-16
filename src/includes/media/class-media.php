@@ -1,8 +1,8 @@
 <?php
 // Enqueue the script needed
 add_action( 'wp_enqueue_scripts', 'buddykit_register_scripts' );
-// Testing purposes
-add_action( 'the_content', 'buddykit_append_form' );
+// Html Templates
+add_action( 'wp_footer', 'buddykit_html_templates' );
 
 // We need to register REST API End Point
 add_action( 'rest_api_init', function () {
@@ -176,13 +176,7 @@ function buddykit_register_scripts() {
 
     wp_enqueue_script( 'buddykit-src', BUDDYKIT_PUBLIC_URI . 'js/buddykit.js', array('plupload-html5', 'backbone', 'underscore'), false );
 
-    wp_localize_script( 'buddykit-src', '__buddyKit', array(
-        'root' => esc_url_raw( rest_url() ),
-        'nonce' => wp_create_nonce( 'wp_rest' ),
-        'rest_upload_uri' => get_rest_url( null, 'buddykit/v1/', 'rest'),
-        'file_list_container_id' => 'buddykit-filelist',
-        'current_user_id' => get_current_user_id()
-    ));
+    wp_localize_script( 'buddykit-src', '__buddyKit', buddykit_config() );
 
     wp_enqueue_script('buddykit-wp-api');
 
@@ -193,17 +187,19 @@ function buddykit_register_scripts() {
 /**
  * Testing purposes
  */
-function buddykit_append_form( $content ) {
-    ob_start();
+
+function buddykit_html_templates() {
     ?>
-    <ul id="buddykit-filelist"></ul>
-    
-    <hr/>
-    <div id="container">
-        <a id="browse" href="javascript:;">[Browse...]</a>
-        <a id="start-upload" href="javascript:;">[Post]</a>
-    </div>
-    <hr/>
+    <script type="text/template" id="buddykit-file-uploader">
+        <div id="container">
+             <a id="browse" href="#" class="button button-primary" style="position: relative; z-index: 1;">
+                <?php esc_html_e('Attach Photo/Video', 'buddykit'); ?>
+            </a>
+        </div>
+        <div id="buddykit-filelist-wrap">
+            <ul id="buddykit-filelist"></ul>
+        </div>
+    </script>
     
     <script type="text/template" id="buddykit-file-list-template">
 
@@ -213,8 +209,7 @@ function buddykit_append_form( $content ) {
         </li>
 
     </script>
-
     <?php
-    return $content . ob_get_clean();
+    return;
 }
 

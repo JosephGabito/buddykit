@@ -15,10 +15,7 @@ define( 'BUDDYKIT_PATH', trailingslashit( plugin_dir_path(__FILE__) ));
 
 define( 'BUDDYKIT_PUBLIC_URI', trailingslashit( plugin_dir_url( __FILE__ ) . '/src/public/'  ));
 
-//@see https://codex.wordpress.org/Editing_wp-config.php
-if ( !defined('FS_CHMOD_DIR') ) {
-	define( 'FS_CHMOD_DIR', ( 0755 & ~ umask() ) );
-}
+require_once BUDDYKIT_PATH . 'config/config.php';
 
 require_once BUDDYKIT_PATH . 'src/install.php';
 

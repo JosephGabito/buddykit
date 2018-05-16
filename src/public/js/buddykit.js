@@ -20,8 +20,19 @@ jQuery(document).ready(function($){
 	});
 
 	// =========================================================
-	// Our View
+	// Our Views
 	// =========================================================
+	var BuddyKitUploaderView = Backbone.View.extend({
+		template: _.template($('#buddykit-file-uploader').html()),
+		initialize: function() {
+			this.render();
+		},
+		render: function(){
+			$('#'+__buddyKit.config.upload_form_container).append(this.template());
+		}
+	});
+	window.buddyKitUploaderView = new BuddyKitUploaderView();
+
 	var BuddykitFileView = Backbone.View.extend({
 		template: _.template( $('#buddykit-file-list-template').html() ),
 		render: function(__model){
@@ -47,14 +58,11 @@ jQuery(document).ready(function($){
 		},
 		deleteItem: function(e) {
 			
-			e.preventDefault();
-			
 			var modelId = e.target.getAttribute('data-model-id');
 			var fileId = e.target.getAttribute('data-file-id');
-
-
-			//buddyKitFiles.remove(modelId);
 			var file = buddyKitFiles.get(modelId);
+
+			e.preventDefault();
 
 			file.destroy({
 				success: function(model, response){
@@ -66,7 +74,9 @@ jQuery(document).ready(function($){
 				url: __buddyKit.rest_upload_uri + 'user-temporary-media-delete/' + fileId
 			});
 
+			return;
 		},
+
 		addNode: function() {
 			
 			var current_model_index = buddyKitGlobalFileCounter;
@@ -82,13 +92,17 @@ jQuery(document).ready(function($){
 			}
 
 		},
+		
 		render: function() {
 			this.$el.html('');
 			this.collection.each(function(fileModel){
 				var fileView = new BuddykitFileView(fileModel);
 					this.$el.append(fileView.render(fileModel));
 			}, this);
+			
 		}
+
+
 	});
 
 	window.buddyKitFiles = new BuddykitFileCollection();
@@ -103,7 +117,9 @@ jQuery(document).ready(function($){
 		url: __buddyKit.rest_upload_uri + 'user-temporary-media',
 		headers: { 'X-WP-Nonce': __buddyKit.nonce },
 		success: function( response ) {
-			buddyKitFiles.add(response);
+			if (response) {
+				buddyKitFiles.add(response);
+			}
 		}
 	});
 	// Index File End ==
@@ -148,7 +164,8 @@ jQuery(document).ready(function($){
 				document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
 			},
 			UploadComplete: function(up, files, response) {
-
+			//	var file_add_button_tpl = _.template($('#buddykit-file-add-button').html());
+			//	filesView.$el.append(file_add_button_tpl());
 			},
 			Error: function(up, err) {
 				document.getElementById('console').appendChild(document.createTextNode("\nError #" + err.code + ": " + err.message));
