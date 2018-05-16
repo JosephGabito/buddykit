@@ -131,11 +131,7 @@ class BuddyKitFileAttachment {
 	 * @param  string  $file_name The file name of the attached file.
 	 * @return boolean             True on success. Otherwise, false.
 	 */
-	public function delete_file( $task_id = 0, $file_name = '' ) {
-
-		if ( empty( $task_id ) ) {
-			return false;
-		}
+	public function delete_file( $file_name = '' ) {
 
 		if ( empty( $file_name ) ) {
 			return false;
@@ -147,13 +143,6 @@ class BuddyKitFileAttachment {
 		}
 
 		$fs = new WP_Filesystem_Direct( $args );
-
-		if ( empty( $task_id ) ) {
-			return false;
-		}
-		if ( empty( $file_name ) ) {
-			return false;
-		}
 
 		// Start deleting the file.
 		$fs->delete( $this->get_current_user_file_path( $task_id, $file_name ) );
@@ -185,7 +174,7 @@ class BuddyKitFileAttachment {
 
 		$path = wp_upload_dir();
 
-		$task_dir = $path['basedir'] . sprintf( '/taskbreaker/%d/tasks/%d', get_current_user_id(), $task_id );
+		$task_dir = $path['basedir'] . sprintf( '/buddykit/%d/tasks/%d', get_current_user_id(), $task_id );
 
 		if ( $fs->delete( $task_dir, true ) ) {
 			$dbase->delete( "{$dbase_prefix}buddykit_task_meta", array( 'task_id' => absint( $task_id ) ), array( '%d' ) );
@@ -214,7 +203,7 @@ class BuddyKitFileAttachment {
 
 		$path = wp_upload_dir();
 
-		$upload_dir = $path['basedir'] . '/taskbreaker/';
+		$upload_dir = $path['basedir'] . '/buddykit/';
 
 		$file = sprintf( '%1$s/%2$d/tasks/%3$d/%4$d', $upload_dir, absint( get_current_user_id() ), absint( $task_id ), sanitize_file_name( $name ) );
 

@@ -48,8 +48,26 @@ jQuery(document).ready(function($){
 		deleteItem: function(e) {
 			
 			e.preventDefault();
+			
 			var modelId = e.target.getAttribute('data-model-id');
-				buddyKitFiles.remove(modelId);
+			var fileName = e.target.getAttribute('data-file-name');
+
+
+			//buddyKitFiles.remove(modelId);
+			var file = buddyKitFiles.get(modelId);
+
+			file.destroy({
+				success: function(model, response){
+					console.log('success');
+				},
+				error: function(model, response) {
+					console.log(response);
+				},
+				data: {
+					file_name: fileName,
+				},
+				url: __buddyKit.rest_upload_uri + 'user-temporary-media-delete/' + fileName
+			});
 
 		},
 		addNode: function() {

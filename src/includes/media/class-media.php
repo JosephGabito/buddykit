@@ -16,40 +16,53 @@ add_action( 'rest_api_init', function () {
         'callback' => 'buddykit_user_temporary_media_endpoint',
     ) );
 
+    register_rest_route( 'buddykit/v1', '/user-temporary-media-delete/(?P<id>\d+)', array(
+        'methods' => 'GET',
+        'callback' => 'buddykit_user_temporary_media_delete_endpoint'
+    ) );
+
 });
+
+function buddykit_user_temporary_media_delete_endpoint(WP_REST_Request $request) {
+    
+    $parameters = $request->get_params();
+ 
+    return new WP_REST_Response(array(
+            'test' => 'form',
+            'file' => $parameters
+        ));
+}
 
 function buddykit_user_temporary_media_endpoint() {
     
     $final = array();
+    
     $user_temporary_files = buddykit_get_user_uploaded_files();
 
     if ( ! empty( $user_temporary_files ) ) {
         foreach( $user_temporary_files as $file ) {
             $final[] = array(
-                    'name' => $file,
-                    'public_url' => buddykit_get_user_temporary_files_url($file),
-                    'user_id' => get_current_user_id(),
-                    'ID' => uniqid(),
-                    'type' => 'image'
-                );
+                    'name' => $file->name,
+                    'public_url' => $file->url,
+                    'user_id' => $file->user_id,
+                    'ID' => $file->id,
+                    'type' => $file->type
+                );    
         }
     }
     return $final;
 }
 
-function buddykit_get_user_uploaded_files() {
+function buddykit_get_user_uploaded_files($tmp=false) {
 
-    $dir   = wp_upload_dir();
-    $files = array();
+    global $wpdb;
 
-    $tmp_dir = $dir['basedir'] . '/buddykit/' . get_current_user_id() . '/tmp/';
+    $stmt = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files 
+        WHERE user_id = %d AND is_tmp = 1;", get_current_user_id());
+
+    $result =  $wpdb->get_results( $stmt );
     
-    if ( is_dir($tmp_dir) ) {
-        $files = preg_grep('/^([^.])/',  scandir( $tmp_dir, 0 ) );
-    }
-    
-    return array_diff($files, array('.','..'));
-
+    return $result;
 }
 
 /**
@@ -57,6 +70,7 @@ function buddykit_get_user_uploaded_files() {
  * @return object instance of WP_REST_Response
  */
 function buddykit_activity_route_endpoint() {
+    global $wpdb;
 
     $http_response = array();
 
@@ -66,11 +80,27 @@ function buddykit_activity_route_endpoint() {
 
     $fs = new BuddyKitFileAttachment();
 
-    // Reads the global $_FILE request.
-    // See includes/media/class-file-attachment.php
     $result = $fs->process_http_file();
     
     $http_response['image'] = $result;
+    
+    $insert = $wpdb->insert( 
+            $wpdb->prefix . 'buddykit_user_files', 
+            array(
+                'user_id' => get_current_user_id(), 
+                'name' => basename( $result['file'] ),
+                'type' => $result['type'],
+                'is_tmp' => 1,
+                'url' => esc_url($result['url']),
+            ), 
+            array( 
+                '%d', 
+                '%s', 
+                '%s', 
+                '%d', 
+                '%s', 
+            ) 
+        );
     
     return new WP_REST_Response($http_response);
 
@@ -153,7 +183,7 @@ function buddykit_append_form( $content ) {
 
         <li class="buddykit-filelist-item">
             <img width="150" src="<%= public_url %>" alt="<%= name %>">
-            <a data-model-id="<%= this.id %>" title="<%= name %>" class="buddykit-filelist-item-delete" href="#"> × </a>
+            <a data-file-name="<%= name %>" data-model-id="<%= this.id %>" title="<%= name %>" class="buddykit-filelist-item-delete" href="#"> × </a>
         </li>
 
     </script>

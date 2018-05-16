@@ -20,4 +20,6 @@ if ( !defined('FS_CHMOD_DIR') ) {
 	define( 'FS_CHMOD_DIR', ( 0755 & ~ umask() ) );
 }
 
+require_once BUDDYKIT_PATH . 'src/install.php';
+
 require_once BUDDYKIT_PATH . 'src/includes/media/class-media.php';
