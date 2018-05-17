@@ -6,22 +6,75 @@ add_action( 'wp_footer', 'buddykit_html_templates' );
 
 // We need to register REST API End Point
 add_action( 'rest_api_init', function () {
+
+    // New activity
     register_rest_route( 'buddykit/v1', '/activity-new', array(
         'methods' => 'POST',
         'callback' => 'buddykit_activity_route_endpoint',
     ) );
 
+    // Temporary media list.
     register_rest_route( 'buddykit/v1', '/user-temporary-media', array(
         'methods' => 'GET',
         'callback' => 'buddykit_user_temporary_media_endpoint',
     ) );
 
+    // Delete media
     register_rest_route( 'buddykit/v1', '/user-temporary-media-delete/(?P<id>\d+)', array(
         'methods' => 'DELETE',
         'callback' => 'buddykit_user_temporary_media_delete_endpoint'
     ) );
 
+    // Flush temporary media
+     register_rest_route( 'buddykit/v1', '/user-temporary-flush/(?P<id>\d+)', array(
+        'methods' => 'DELETE',
+        'callback' => 'buddykit_user_temporary_media_flush_all_endpoint',
+        'args' => array(
+                'id' => array(
+                    'validate_callback' => '__buddykit_user_temporary_media_flush_all_endpoint_validate_id'
+                ),
+            ),
+    ) );
 });
+
+
+function __buddykit_user_temporary_media_flush_all_endpoint_validate_id($id) 
+{
+    return get_current_user_id() === (int) $id;
+}
+
+function buddykit_user_temporary_media_flush_all_endpoint(WP_REST_Request $request) {
+    
+    global $wpdb;
+
+    $request = $request->get_params();
+    $user_id = (int)$request['id'];
+
+    if ( $user_id !== get_current_user_id() ) {
+        return false;
+    }
+
+    $deleted = $wpdb->delete( $wpdb->prefix.'buddykit_user_files', array( 'user_id' => $user_id ), array( '%d' ) );
+
+    if ( $deleted ) {
+        // Delete the file in the tmp
+        if ( ! class_exists('BuddyKitFileAttachment') ) {
+            require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';;
+        }
+        
+        $fs = new BuddyKitFileAttachment();
+        
+        if ( $fs->flush_dir($user_id) ) {
+             return new WP_REST_Response(
+                array(
+                    'message' => 'DELETE_OK'
+                )
+            );
+         }
+    }
+
+    return false;
+}
 
 function buddykit_user_temporary_media_delete_endpoint(WP_REST_Request $request) {
     
@@ -48,15 +101,19 @@ function buddykit_user_temporary_media_delete_endpoint(WP_REST_Request $request)
             require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';;
         }
         $fs = new BuddyKitFileAttachment();
-        $fs->delete_file($file->name);
+        
+        if ( ! $fs->delete_file($file->name) ) {
+            return false;
+        }
+
     } else {
-        print_r( $file_id );
         echo 'There was an error';
     }
-    return new WP_REST_Response(array(
-            'test' => 'form',
+    return new WP_REST_Response(
+        array(
             'file' => $file_id
-        ));
+        )
+    );
 }
 
 function buddykit_user_temporary_media_endpoint() {
@@ -96,6 +153,7 @@ function buddykit_get_user_uploaded_files($tmp=false) {
  * @return object instance of WP_REST_Response
  */
 function buddykit_activity_route_endpoint() {
+
     global $wpdb;
 
     $http_response = array();
@@ -109,8 +167,10 @@ function buddykit_activity_route_endpoint() {
     $result = $fs->process_http_file();
     
     $http_response['image'] = $result;
-    
-    $insert = $wpdb->insert( 
+    $http_response['status'] = 201;
+    $http_response['file_id'] = 0;
+
+    $inserted = $wpdb->insert( 
             $wpdb->prefix . 'buddykit_user_files', 
             array(
                 'user_id' => get_current_user_id(), 
@@ -127,6 +187,11 @@ function buddykit_activity_route_endpoint() {
                 '%s', 
             ) 
         );
+
+    if ( $inserted ) {
+        $http_response['status'] = 200;
+        $http_response['file_id'] = absint($wpdb->insert_id);
+    }
     
     return new WP_REST_Response($http_response);
 
@@ -174,11 +239,10 @@ function buddykit_register_scripts() {
     
     wp_enqueue_style( 'buddykit-style', BUDDYKIT_PUBLIC_URI . 'css/buddykit.css', false );
 
-    wp_enqueue_script( 'buddykit-src', BUDDYKIT_PUBLIC_URI . 'js/buddykit.js', array('plupload-html5', 'backbone', 'underscore'), false );
-
-    wp_localize_script( 'buddykit-src', '__buddyKit', buddykit_config() );
-
-    wp_enqueue_script('buddykit-wp-api');
+    if ( is_user_logged_in() ) {
+        wp_enqueue_script( 'buddykit-src', BUDDYKIT_PUBLIC_URI . 'js/buddykit.js', array('plupload-html5', 'backbone', 'underscore'), false );
+        wp_localize_script( 'buddykit-src', '__buddyKit', buddykit_config() );
+    }
 
     return;
 }
@@ -190,26 +254,31 @@ function buddykit_register_scripts() {
 
 function buddykit_html_templates() {
     ?>
-    <script type="text/template" id="buddykit-file-uploader">
-        <div id="container">
-             <a id="browse" href="#" class="button button-primary" style="position: relative; z-index: 1;">
-                <?php esc_html_e('Attach Photo/Video', 'buddykit'); ?>
-            </a>
-        </div>
-        <div id="buddykit-filelist-wrap">
-            <ul id="buddykit-filelist"></ul>
-        </div>
-    </script>
-    
-    <script type="text/template" id="buddykit-file-list-template">
-
-        <li class="buddykit-filelist-item">
-            <img width="150" src="<%= public_url %>" alt="<%= name %>">
-            <a data-file-id="<%= ID %>" data-model-id="<%= this.id %>" title="<%= name %>" class="buddykit-filelist-item-delete" href="#"> × </a>
-        </li>
-
-    </script>
+    <?php if ( is_user_logged_in() ) {?>
+        <script type="text/template" id="buddykit-file-uploader">
+            <div id="container">
+                 <a id="browse" href="#" class="button button-primary" style="position: relative; z-index: 1;">
+                    <?php esc_html_e('Attach Photo/Video', 'buddykit'); ?>
+                </a>
+            </div>
+            <div id="buddykit-filelist-wrap">
+                <ul id="buddykit-filelist"></ul>
+                <div id="buddykit-flush-tmp-files-wrap">
+                    <a href="#" style="display: none;" id="buddykit-flush-temporary-files-btn" title="<?php esc_attr_e('Clear All Files','buddykit'); ?>" class="button button-danger">
+                        <?php esc_html_e('Clear All Files','buddykit'); ?> 
+                    </a>
+                </div>
+            </div>
+        </script>
+        
+        <script type="text/template" id="buddykit-file-list-template">
+            <li class="buddykit-filelist-item">
+                <img width="150" src="<%= public_url %>" alt="<%= name %>">
+                <a data-file-id="<%= ID %>" data-model-id="<%= this.id %>" title="<%= name %>" class="buddykit-filelist-item-delete" href="#"> × </a>
+            </li>
+        </script>
     <?php
+    }
     return;
 }
 

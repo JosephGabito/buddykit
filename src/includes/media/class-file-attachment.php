@@ -145,19 +145,16 @@ class BuddyKitFileAttachment {
 		$fs = new WP_Filesystem_Direct( $args = array() );
 
 		// Start deleting the file.
-		$fs->delete( $this->get_current_user_file_path( $file_name, $is_tmp = true ) );
+		
+		$path = $this->get_current_user_file_path( $file_name, $is_tmp = true );
+
+		return $fs->delete( $path );
 
 	}
 
-	/**
-	 * Delete all files under a specific task.
-	 *
-	 * @param  integer $task_id The task ID.
-	 * @return boolean           True on success. Otherwise, false.
-	 */
-	public function delete_task_attachments( $task_id = 0 ) {
+	public function flush_dir($user_id) {
 
-		if ( empty( $task_id ) ) {
+		if ( empty( $user_id ) ) {
 			return false;
 		}
 
@@ -166,45 +163,34 @@ class BuddyKitFileAttachment {
 		    require_once( ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php' );
 		}
 
-		$fs = new WP_Filesystem_Direct( array() );
-
-		$dbase = BuddyKit::wpdb();
-
-        $dbase_prefix = BuddyKit::bp_core_get_table_prefix();
-
 		$path = wp_upload_dir();
 
-		$task_dir = $path['basedir'] . sprintf( '/buddykit/%d/tasks/%d', get_current_user_id(), $task_id );
+		$upload_dir = $path['basedir'] . '/buddykit/';
 
-		if ( $fs->delete( $task_dir, true ) ) {
-			$dbase->delete( "{$dbase_prefix}buddykit_task_meta", array( 'task_id' => absint( $task_id ) ), array( '%d' ) );
-			return true;
-		}
+		$path = $upload_dir . $user_id . '/tmp/';
+		
+		$fs = new WP_Filesystem_Direct( array() );
 
-		return false;
+		return $fs->rmdir($path, $recursive = true);
 
 	}
 
 	/**
 	 * Returns the current logged-in user file path.
-	 *
-	 * @param  string $task_id The task ID.
-	 * @param  string $name    The task file name.
-	 * @return boolean          The current directory path of the current logged-in user.
 	 */
 	public function get_current_user_file_path( $name = '', $is_tmp = false ) {
 
-		if ( ! empty( $name ) ) {
+		if ( empty( $name ) ) {
 			return false;
 		}
 
 		$path = wp_upload_dir();
 
-		$upload_dir = $path['basedir'] . '/buddykit/';
+		$upload_dir = $path['basedir'] . '/buddykit';
 		
 		$uploads = $is_tmp ? 'tmp': 'uploads';
 
-		$file = sprintf( '%1$s/%2$d/%3$d/%4$d', $upload_dir, absint( get_current_user_id() ), $uploads, $name );
+		$file = $upload_dir .'/'. absint( get_current_user_id() ) .'/'. $uploads .'/'.$name;
 
 		return $file;
 
