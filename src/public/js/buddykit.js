@@ -22,7 +22,7 @@ jQuery(document).ready(function($){
 	// =========================================================
 	// Our Views
 	// =========================================================
-	
+
 	// ==========
 	// View: BuddyKitUploaderView (Upload Wrapper)
 	// ==========
@@ -76,7 +76,7 @@ jQuery(document).ready(function($){
 				$('#buddykit-flush-temporary-files-btn').show();
 			}
 		},
-		
+
 		flushAllItems: function(e){
 			e.preventDefault();
 			$.ajax({
@@ -99,7 +99,7 @@ jQuery(document).ready(function($){
 		},
 
 		deleteItem: function(e) {
-			
+
 			var modelId = e.target.getAttribute('data-model-id');
 			var fileId = e.target.getAttribute('data-file-id');
 			var file = buddyKitFiles.get(modelId);
@@ -122,36 +122,36 @@ jQuery(document).ready(function($){
 		},
 
 		addNode: function() {
-			
+
 			var current_model_index = buddyKitGlobalFileCounter;
-			
+
 			if ( 0 === this.collection.length ) { current_model_index = 0; }
-			
+
 			var fileModel = this.collection.at(current_model_index);
-			
+
 			var fileView = new BuddykitFileView(fileModel);
-			
+
 			if ( fileModel ) {
 				this.ul.append( fileView.render(fileModel) );
 			}
 
 		},
-		
+
 		render: function() {
 			this.ul.html('');
 			this.collection.each(function(fileModel){
 				var fileView = new BuddykitFileView(fileModel);
 					this.ul.append(fileView.render(fileModel));
 			}, this);
-			
+
 		}
 	});
 
 	window.buddyKitFiles = new BuddykitFileCollection();
-	
+
 	// Index File ===
 	window.buddyKitFilesView = new BuddykitFilesView({ collection: buddyKitFiles });
-	
+
 	buddyKitFilesView.render();
 
 	// Sync the files
@@ -165,6 +165,8 @@ jQuery(document).ready(function($){
 		}
 	});
 	// Index File End ==
+
+	// PlUpload Script
 	var uploader = new plupload.Uploader({
 		runtimes : 'html5,flash,silverlight',
 		browse_button : document.getElementById('browse'),
@@ -184,10 +186,10 @@ jQuery(document).ready(function($){
 				});
 				uploader.start();
 			},
-			FileUploaded: function(up, file, response) { 
+			FileUploaded: function(up, file, response) {
 
 				if ( 200 === response.status ) {
-					
+
 					var json_response = JSON.parse(response.response);
 					var image = json_response.image;
 					var image_url = image.url;
@@ -201,12 +203,12 @@ jQuery(document).ready(function($){
 							user_id: __buddyKit.current_user_id,
 							type: file.type
 						});
-						
+
 						$('#'+file.id).remove();
 						buddyKitFiles.add( buddykitFile );
 
 					} else {
-						
+
 						console.log('Error @uploader.FileUploaded: Zero file id.');
 
 					}
