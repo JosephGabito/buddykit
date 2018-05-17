@@ -44,17 +44,22 @@ ul#buddykit-filelist li.buddykit-filelist-item > a.buddykit-filelist-item-delete
 
 /*========== Activity Stream Start========== */
 #buddypress ul.buddykit-activity-media-gallery {
+    display: flex;
+    flex-wrap: wrap-reverse;;
     padding: 0;
     margin: 0;
-    display: inline-block;
-    width: 100%;
+}
+#buddypress ul.buddykit-activity-media-gallery.items-4 li.buddykit-activity-media-gallery-item {
+    flex-basis: 50%;
 }
 #buddypress li.buddykit-activity-media-gallery-item {
-    float: left;
-    width: 33%;
-    height: 150px;
-    overflow: hidden;
-    background: #ddd;
+    flex-basis: 33.3%;
+    flex-grow: 1;
+    background: #fff;
+    padding: 1px;
     margin: 0;
+}
+#buddypress li.buddykit-activity-media-gallery-item img {
+    width: 100%;
 }
 /*========== Activity Stream End========== */
