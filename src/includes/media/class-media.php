@@ -91,9 +91,9 @@ function buddykit_activity_new_endpoint() {
             'user_id' =>  $user_id,
         );
 
-        $activity_id = bp_activity_add( $args );
-
-        if ($activity_id >=1) {
+        //$activity_id = bp_activity_add( $args );
+        $activity_id = 0;
+        if ($activity_id ==0) {
             buddykit_flush_user_tmp_files($user_id);
         }
 
@@ -139,7 +139,7 @@ function buddykit_flush_user_tmp_files($user_id) {
 
     $deleted = $wpdb->delete( $wpdb->prefix.'buddykit_user_files', array( 'user_id' => $user_id ), array( '%d' ) );
 
-    if ( $deleted ) {
+    if ( true ) {//@todo
         // Delete the file in the tmp
         if ( ! class_exists('BuddyKitFileAttachment') ) {
             require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';;
@@ -147,7 +147,9 @@ function buddykit_flush_user_tmp_files($user_id) {
 
         $fs = new BuddyKitFileAttachment();
 
-        if ( $fs->flush_dir($user_id) ) {
+        $flushed = $fs->flush_dir($user_id);
+
+        if (  $flushed ) {
             return true;
          }
     }

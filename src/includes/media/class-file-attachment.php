@@ -145,7 +145,7 @@ class BuddyKitFileAttachment {
 		$fs = new WP_Filesystem_Direct( $args = array() );
 
 		// Start deleting the file.
-		
+
 		$path = $this->get_current_user_file_path( $file_name, $is_tmp = true );
 
 		return $fs->delete( $path );
@@ -167,11 +167,19 @@ class BuddyKitFileAttachment {
 
 		$upload_dir = $path['basedir'] . '/buddykit/';
 
-		$path = $upload_dir . $user_id . '/tmp/';
-		
+		$source_path = $upload_dir . $user_id . '/tmp/';
+
+		$destination_path = $upload_dir . $user_id . '/uploads/';
+
 		$fs = new WP_Filesystem_Direct( array() );
 
-		return $fs->rmdir($path, $recursive = true);
+		// Move the 'tmp' directory files to 'uploads'
+		// 1. read all the files at temporary directory
+		$tmp_files = $fs->dirlist($source_path);
+		print_r($tmp_files);
+		// 2. create the destination directory('uploads') if dir is not existing
+		// 3. move all files from temporary directory to uploads
+		//return $fs->rmdir($path, $recursive = true);
 
 	}
 
@@ -187,7 +195,7 @@ class BuddyKitFileAttachment {
 		$path = wp_upload_dir();
 
 		$upload_dir = $path['basedir'] . '/buddykit';
-		
+
 		$uploads = $is_tmp ? 'tmp': 'uploads';
 
 		$file = $upload_dir .'/'. absint( get_current_user_id() ) .'/'. $uploads .'/'.$name;
