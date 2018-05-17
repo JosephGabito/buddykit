@@ -33,7 +33,7 @@ function buddykit_config() {
                 'temporary_file_delete_item_message' => __('Are you sure you want to delete this?', 'buddykit'),
             ),
         'config' => array(
-            'upload_form_container' => apply_filters('buddykit_config_upload_form_container', 'post-4317'),
+            'upload_form_container' => apply_filters('buddykit_config_upload_form_container', 'whats-new-form'),
         ),
     );
 }

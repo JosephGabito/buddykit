@@ -7,10 +7,15 @@ add_action( 'wp_footer', 'buddykit_html_templates' );
 // We need to register REST API End Point
 add_action( 'rest_api_init', function () {
 
-    // New activity
-    register_rest_route( 'buddykit/v1', '/activity-new', array(
+    // New upload
+    register_rest_route( 'buddykit/v1', '/upload', array(
         'methods' => 'POST',
         'callback' => 'buddykit_activity_route_endpoint',
+    ) );
+
+    register_rest_route( 'buddykit/v1', '/activity-new', array(
+        'methods' => 'GET',
+        'callback' => 'buddykit_activity_new_endpoint',
     ) );
 
     // Temporary media list.
@@ -37,6 +42,59 @@ add_action( 'rest_api_init', function () {
     ) );
 });
 
+add_filter('bp_activity_allowed_tags', '__buddykit_update_activity_kses_filter', 10);
+
+function __buddykit_update_activity_kses_filter()
+{
+    $bp_allowed_tags = bp_get_allowedtags();
+    $bp_allowed_tags['ul'] = array(
+                        'class' => array()
+                     );
+    $bp_allowed_tags['li'] = array(
+                        'class' => array()
+                     ); 
+    return $bp_allowed_tags;
+}
+function buddykit_activity_new_endpoint() {
+    
+    global $wpdb;
+    $user_id = 1;
+
+    if ( function_exists('bp_activity_add')) 
+    {
+
+        //print_r(__buddykit_update_activity_kses_filter());
+        $stmt = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files 
+            WHERE user_id = %d AND is_tmp = %d", 
+            $user_id, 1
+        );
+        
+        $results = $wpdb->get_results($stmt, OBJECT);
+        $media_html = '';
+
+        if ( !empty($results)) {
+            $media_html .= '<ul class="buddykit-activity-media-gallery">';
+                foreach( $results as $result ) {
+                    $media_html .= '<li class="buddykit-activity-media-gallery-item">';
+                        $media_html .= '<img src="'.esc_url($result->url).'" alt="'.esc_attr($result->name).'" />';
+                    $media_html .= '</li>';
+                }
+            $media_html .= '</ul>';
+        }
+        
+        $args = array(
+            'action' => '<a href="http://example.com/members/bill">Bill</a> uploaded 6 new photos',
+            'content' => apply_filters('buddykit_media_activity_html', $media_html, $results),
+            'component' => 'members',
+            'type' => 'activity_update',
+            'user_id' =>  $user_id,
+        );
+
+
+        $activity_id = bp_activity_add( $args );
+    }
+    return false;
+}
 
 function __buddykit_user_temporary_media_flush_all_endpoint_validate_id($id) 
 {
@@ -265,7 +323,7 @@ function buddykit_html_templates() {
                 <ul id="buddykit-filelist"></ul>
                 <div id="buddykit-flush-tmp-files-wrap">
                     <a href="#" style="display: none;" id="buddykit-flush-temporary-files-btn" title="<?php esc_attr_e('Clear All Files','buddykit'); ?>" class="button button-danger">
-                        <?php esc_html_e('Clear All Files','buddykit'); ?> 
+                        <?php esc_html_e('Clear Files','buddykit'); ?> 
                     </a>
                 </div>
             </div>

@@ -41,3 +41,20 @@ ul#buddykit-filelist li.buddykit-filelist-item > a.buddykit-filelist-item-delete
 .buddykit-info {
     display: none;
 }
+
+/*========== Activity Stream Start========== */
+#buddypress ul.buddykit-activity-media-gallery {
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+    width: 100%;
+}
+#buddypress li.buddykit-activity-media-gallery-item {
+    float: left;
+    width: 33%;
+    height: 150px;
+    overflow: hidden;
+    background: #ddd;
+    margin: 0;
+}
+/*========== Activity Stream End========== */

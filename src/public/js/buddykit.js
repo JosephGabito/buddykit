@@ -169,7 +169,7 @@ jQuery(document).ready(function($){
 		runtimes : 'html5,flash,silverlight',
 		browse_button : document.getElementById('browse'),
 		container: document.getElementById('container'),
-		url : __buddyKit.rest_upload_uri + 'activity-new',
+		url : __buddyKit.rest_upload_uri + 'upload',
 		flash_swf_url: 'vendor/plupload/Moxie.swf',
 		silverlight_xap_url: 'vendor/plupload/Moxie.xap',
 		filters : {},
