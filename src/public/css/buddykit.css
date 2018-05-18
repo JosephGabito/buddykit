@@ -76,3 +76,15 @@ ul#buddykit-filelist li.buddykit-filelist-item > a.buddykit-filelist-item-delete
 input#aw-whats-new-submit[disabled=disabled] {
     cursor: not-allowed;
 }
+/*Upload photo/video button*/
+#browse{
+    border-radius: 20px;
+    background: #f6f7f9!important;
+    padding: 5px 7.5px;
+    margin: 0 15px;
+}
+#browse:before {
+    content: "\f233";
+    color: #87be49;
+    font-family: 'dashicons';
+}
