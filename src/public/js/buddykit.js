@@ -2,6 +2,7 @@
  * Upload Collection
  */
 jQuery(document).ready(function($){
+
 	window.buddyKitGlobalFileCounter = 0;
 	// =========================================================
 	// Our Model
@@ -220,17 +221,34 @@ jQuery(document).ready(function($){
 			},
 			UploadProgress: function(up, file) {
 				document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
+				//Disable activity post form when uploading is going on to prevent unexpected things from happening.
+				$('#aw-whats-new-submit').attr('disabled', true);
 			},
 			UploadComplete: function(up, files, response) {
-			//	var file_add_button_tpl = _.template($('#buddykit-file-add-button').html());
-			//	filesView.$el.append(file_add_button_tpl());
+			
+				$('#aw-whats-new-submit').attr('disabled', false);
 			},
 			Error: function(up, err) {
 				document.getElementById('console').appendChild(document.createTextNode("\nError #" + err.code + ": " + err.message));
+				$('#aw-whats-new-submit').attr('disabled', false);
 			}
 		}
 	}); // End uploaded object.
 
 	uploader.init();
 
+	var __view = Backbone.View.extend({
+		initialize: function(){
+
+			var buddykitBpActivityModel = bp.Models.Activity;
+			this.listenTo( bp.Nouveau.Activity.postForm.views.models, 'change', function(){
+				alert('test');
+			});
+
+		}
+	});
+
+	new __view();
+
+	
 });
