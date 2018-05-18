@@ -13,7 +13,7 @@ function buddykit_update_db_check() {
     }
 }
 
-$buddykit_db_version = '0.0.1';
+$buddykit_db_version = '0.0.4';
 
 function buddykit_install() {
 
@@ -35,7 +35,6 @@ function buddykit_install() {
 			name tinytext NOT NULL,
 			type varchar(55) NOT NULL,
 			is_tmp smallint(1) NOT NULL,
-			url tinytext DEFAULT '' NOT NULL,
 			last_updated datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
 			date_created datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
 			PRIMARY KEY  (id)
