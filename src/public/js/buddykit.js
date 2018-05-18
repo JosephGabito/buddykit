@@ -79,7 +79,9 @@ jQuery(document).ready(function($){
 		},
 
 		flushAllItems: function(e){
-			e.preventDefault();
+			if (e) {
+				e.preventDefault();
+			}
 			$.ajax({
 				url: __buddyKit.rest_upload_uri + 'user-temporary-flush/' + __buddyKit.current_user_id,
 				type: 'DELETE',
@@ -237,18 +239,14 @@ jQuery(document).ready(function($){
 
 	uploader.init();
 
-	var __view = Backbone.View.extend({
-		initialize: function(){
-
-			var buddykitBpActivityModel = bp.Models.Activity;
-			this.listenTo( bp.Nouveau.Activity.postForm.views.models, 'change', function(){
-				alert('test');
-			});
-
-		}
+	/**
+	 * Old good jQuery events
+	 */
+	$('body').on('click', '#aw-whats-new-submit', function(){
+		setTimeout(function(){
+			buddyKitFiles.remove(buddyKitFiles.models);
+		},1250);//put some delay effect.
 	});
-
-	new __view();
 
 	
 });
