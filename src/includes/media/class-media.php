@@ -47,6 +47,9 @@ add_filter('bp_activity_allowed_tags', '__buddykit_update_activity_kses_filter',
 function __buddykit_update_activity_kses_filter()
 {
     $bp_allowed_tags = bp_get_allowedtags();
+   
+    $bp_allowed_tags['a']['data-fancybox'] = array();
+   
     $bp_allowed_tags['ul'] = array(
                         'class' => array()
                      );
@@ -55,48 +58,66 @@ function __buddykit_update_activity_kses_filter()
                      );
     return $bp_allowed_tags;
 }
+
 function buddykit_activity_new_endpoint() {
 
     global $wpdb;
+
     $user_id = 1;
 
     if ( function_exists('bp_activity_add'))
     {
 
-        //print_r(__buddykit_update_activity_kses_filter());
-        $stmt = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files
-            WHERE user_id = %d AND is_tmp = %d",
-            $user_id, 1
-        );
+        $flushed = buddykit_flush_user_tmp_files($user_id);
 
-        $results = $wpdb->get_results($stmt, OBJECT);
+        if ( $flushed ) {
 
-        $media_html = '';
+            $stmt = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files
+                WHERE user_id = %d AND is_tmp = %d",
+                $user_id, 1
+            );
 
-        if ( !empty($results)) {
-            $media_html .= '<ul class="buddykit-activity-media-gallery items-'.absint(count($results)).'">';
-                foreach( $results as $result ) {
-                    $media_html .= '<li class="buddykit-activity-media-gallery-item">';
-                        $media_html .= '<img src="'.esc_url($result->url).'" alt="'.esc_attr($result->name).'" />';
-                    $media_html .= '</li>';
-                }
-            $media_html .= '</ul>';
+            $results = $wpdb->get_results($stmt, OBJECT);
+
+            $media_html = '';
+          
+            if ( ! empty($results)) {
+                
+                $media_html .= '<ul class="buddykit-activity-media-gallery items-'.absint(count($results)).'">';
+                    foreach( $results as $result ) {
+                        $url = BuddyKitFileAttachment::get_user_uploads_url($result->user_id) . $result->name;
+                        $media_html .= '<li class="buddykit-activity-media-gallery-item">';
+                            $media_html .= '<a data-fancybox="gallery" title="'.esc_attr($result->name).'" href="'.esc_url($url).'">';
+                                $media_html .= '<img src="'.esc_url($url).'" alt="'.esc_attr($result->name).'" />';
+                            $media_html .= '</a>';
+                        $media_html .= '</li>';
+                    }
+                $media_html .= '</ul>';
+            }
+
+            $args = array(
+                'action' => '<a href="http://example.com/members/bill">Bill</a> uploaded '.absint(count($results)).' new photos',
+                'content' => apply_filters('buddykit_media_activity_html', $media_html, $results),
+                'component' => 'members',
+                'type' => 'activity_update',
+                'user_id' =>  $user_id,
+            );
+
+            $activity_id = bp_activity_add( $args );
+
+            if ( $activity_id >= 1) {
+                // Update the record
+                $updated = $wpdb->update(
+                    $wpdb->prefix . 'buddykit_user_files',
+                    array('is_tmp' => '0'), 
+                    array('user_id' => $user_id),
+                    array('%d'),
+                    array('%d')
+                );
+            }
+        } else {
+            return false;
         }
-
-        $args = array(
-            'action' => '<a href="http://example.com/members/bill">Bill</a> uploaded '.absint(count($results)).' new photos',
-            'content' => apply_filters('buddykit_media_activity_html', $media_html, $results),
-            'component' => 'members',
-            'type' => 'activity_update',
-            'user_id' =>  $user_id,
-        );
-
-        //$activity_id = bp_activity_add( $args );
-        $activity_id = 0;
-        if ($activity_id ==0) {
-            buddykit_flush_user_tmp_files($user_id);
-        }
-
     }
 
     return false;
@@ -133,26 +154,20 @@ function buddykit_flush_user_tmp_files($user_id) {
 
     global $wpdb;
 
-    if ( empty( $user_id ) ) {
-         return false;
-     }
+    if ( empty( $user_id ) ) { return false; }
 
-    $deleted = $wpdb->delete( $wpdb->prefix.'buddykit_user_files', array( 'user_id' => $user_id ), array( '%d' ) );
-
-    if ( true ) {//@todo
-        // Delete the file in the tmp
-        if ( ! class_exists('BuddyKitFileAttachment') ) {
-            require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';;
-        }
-
-        $fs = new BuddyKitFileAttachment();
-
-        $flushed = $fs->flush_dir($user_id);
-
-        if (  $flushed ) {
-            return true;
-         }
+    if ( ! class_exists('BuddyKitFileAttachment') )  {
+        require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';;
     }
+
+    $fs = new BuddyKitFileAttachment();
+
+    $flushed = $fs->flush_dir($user_id);
+
+    if ( $flushed ) { 
+        return true;  
+    }
+    
     return false;
 }
 
@@ -257,14 +272,12 @@ function buddykit_activity_route_endpoint() {
                 'name' => basename( $result['file'] ),
                 'type' => $result['type'],
                 'is_tmp' => 1,
-                'url' => esc_url($result['url']),
             ),
             array(
                 '%d',
                 '%s',
                 '%s',
                 '%d',
-                '%s',
             )
         );
 
@@ -318,9 +331,12 @@ function buddykit_get_user_upload_dir( $is_temporary = false )
 function buddykit_register_scripts() {
 
     wp_enqueue_style( 'buddykit-style', BUDDYKIT_PUBLIC_URI . 'css/buddykit.css', false );
+    wp_enqueue_style( 'fancy-box-style', BUDDYKIT_PUBLIC_URI . 'css/vendor/fancybox/jquery.fancybox.min.css', false );
+    wp_enqueue_script( 'fancy-box-js', BUDDYKIT_PUBLIC_URI . 'js/vendor/fancybox/fancybox.js',  array('jquery'), false );
 
     if ( is_user_logged_in() ) {
-        wp_enqueue_script( 'buddykit-src', BUDDYKIT_PUBLIC_URI . 'js/buddykit.js', array('plupload-html5', 'backbone', 'underscore'), false );
+        wp_enqueue_script( 'buddykit-src', BUDDYKIT_PUBLIC_URI . 'js/buddykit.js', 
+            array('plupload-html5', 'backbone', 'underscore'), false );
         wp_localize_script( 'buddykit-src', '__buddyKit', buddykit_config() );
     }
 
