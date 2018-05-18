@@ -37,7 +37,7 @@ add_action( 'rest_api_init', function () {
         'callback' => 'buddykit_user_temporary_media_flush_all_endpoint',
         'args' => array(
                 'id' => array(
-                    'validate_callback' => '__buddykit_user_temporary_media_flush_all_endpoint_validate_id'
+                    'validate_callback' => '__does_user_owns_the_file_validate'
                 ),
             ),
     ) );
@@ -131,7 +131,7 @@ function buddykit_activity_new_endpoint() {
     return false;
 }
 
-function __buddykit_user_temporary_media_flush_all_endpoint_validate_id($id)
+function __does_user_owns_the_file_validate($id)
 {
     return get_current_user_id() === (int) $id;
 }
@@ -139,15 +139,15 @@ function __buddykit_user_temporary_media_flush_all_endpoint_validate_id($id)
 function buddykit_user_temporary_media_flush_all_endpoint(WP_REST_Request $request) {
 
     $request = $request->get_params();
-    $user_id = (int)$request['id'];
+    $user_id = get_current_user_id();
 
     if ( $user_id !== get_current_user_id() ) {
         return false;
     }
 
-    $flushed = buddykit_flush_user_tmp_files($user_id);
+    $destroyed = buddykit_destroy_temporary_files($user_id);
 
-    if ( $flushed ) {
+    if ( $destroyed ) {
         return new WP_REST_Response(
            array(
                'message' => 'DELETE_OK'
@@ -158,6 +158,41 @@ function buddykit_user_temporary_media_flush_all_endpoint(WP_REST_Request $reque
     return false;
 }
 
+function buddykit_destroy_temporary_files($user_id){
+
+    global $wpdb;
+
+    if ( empty($user_id ) ) {return false;}
+    
+    $dir = wp_upload_dir();
+
+    $tmpdir = $dir['basedir'] . '/buddykit/' . $user_id . '/tmp/';
+
+    $record_deleted = $wpdb->delete( $wpdb->prefix.'buddykit_user_files', 
+        array(
+            'user_id' => $user_id,
+            'is_tmp' => 1
+        ),
+        array(
+            '%d',
+            '%d'
+        )
+    );
+
+    if ( $record_deleted ) {
+
+        if ( ! class_exists( 'WP_Filesystem_Direct' ) ) {
+            require_once( ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php' );
+            require_once( ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php' );
+        }
+        $fs = new WP_Filesystem_Direct(array());
+        if ( $fs->delete($tmpdir, true) ) {
+            return true;
+        }
+    }
+
+    return false;
+}
 function buddykit_flush_user_tmp_files($user_id) {
 
     global $wpdb;
