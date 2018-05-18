@@ -3,7 +3,8 @@
 add_action( 'wp_enqueue_scripts', 'buddykit_register_scripts' );
 // Html Templates
 add_action( 'wp_footer', 'buddykit_html_templates' );
-
+// Append media to activity
+add_filter('bp_activity_new_update_content', '__buddykit_activity_append_media_content');
 // We need to register REST API End Point
 add_action( 'rest_api_init', function () {
 
@@ -59,67 +60,73 @@ function __buddykit_update_activity_kses_filter()
     return $bp_allowed_tags;
 }
 
-function buddykit_activity_new_endpoint() {
+
+function __buddykit_activity_append_media_content( $activity_content )
+{
+    $activity_content .= str_replace('http://','//',buddykit_activity_append_media_content());
+    return $activity_content;
+}
+
+function buddykit_activity_append_media_content () {
 
     global $wpdb;
+    
+    $media_html = '';
 
-    $user_id = 1;
+    $user_id = get_current_user_id();
 
-    if ( function_exists('bp_activity_add'))
-    {
+    $stmt = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files
+            WHERE user_id = %d AND is_tmp = %d",
+            $user_id, 1
+        );
 
+    $results = $wpdb->get_results($stmt, OBJECT);
+
+    // Check if there are temporary files
+    if ( ! empty ( $results ) ) {
+        
+        // Flush the content.
         $flushed = buddykit_flush_user_tmp_files($user_id);
-
         if ( $flushed ) {
-
-            $stmt = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files
-                WHERE user_id = %d AND is_tmp = %d",
-                $user_id, 1
-            );
-
-            $results = $wpdb->get_results($stmt, OBJECT);
-
-            $media_html = '';
-          
-            if ( ! empty($results)) {
-                
-                $media_html .= '<ul class="buddykit-activity-media-gallery items-'.absint(count($results)).'">';
-                    foreach( $results as $result ) {
-                        $url = BuddyKitFileAttachment::get_user_uploads_url($result->user_id) . $result->name;
-                        $media_html .= '<li class="buddykit-activity-media-gallery-item">';
-                            $media_html .= '<a data-fancybox="gallery" title="'.esc_attr($result->name).'" href="'.esc_url($url).'">';
-                                $media_html .= '<img src="'.esc_url($url).'" alt="'.esc_attr($result->name).'" />';
-                            $media_html .= '</a>';
-                        $media_html .= '</li>';
-                    }
-                $media_html .= '</ul>';
+            if ( ! class_exists('BuddyKitFileAttachment') )  {
+                require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';;
             }
-            $user_link = bp_core_get_userlink($user_id);
-            $action = sprintf(__('%s uploaded %d new media', 'buddykit'), $user_link, absint( count( $results ) ));
-            $args = array(
-                'action' => $action,
-                'content' => apply_filters('buddykit_media_activity_html', $media_html, $results),
-                'component' => 'members',
-                'type' => 'activity_update',
-                'user_id' =>  $user_id,
-            );
 
-            $activity_id = bp_activity_add( $args );
+            // Start constructing activity template if files were successfully flushed.
+            $gallery_id = 'buddykit-activity-gallery-'.uniqid();
+            // Start template
+            $media_html .= '<ul class="buddykit-activity-media-gallery items-'.absint(count($results)).'">';
 
-            if ( $activity_id >= 1) {
-                // Update the record
-                $updated = $wpdb->update(
-                    $wpdb->prefix . 'buddykit_user_files',
-                    array('is_tmp' => '0'), 
-                    array('user_id' => $user_id),
-                    array('%d'),
-                    array('%d')
-                );
-            }
-        } else {
-            return false;
+                foreach( $results as $result ) {
+                    $url = BuddyKitFileAttachment::get_user_uploads_url($result->user_id) . $result->name;
+                    $media_html .= '<li class="buddykit-activity-media-gallery-item">';
+                        $media_html .= '<a data-fancybox="'.esc_attr($gallery_id).'" title="'.esc_attr($result->name).'" href="'.esc_url($url).'">';
+                            $media_html .= '<img src="'.esc_url($url).'" alt="'.esc_attr($result->name).'" />';
+                        $media_html .= '</a>';
+                    $media_html .= '</li>';
+                }
+            
+            $media_html .= '</ul>';
+            // End template
         }
     }
+
+    if ( ! empty ( $media_html) ) {
+        // Update the record.
+        $updated = $wpdb->update(
+            $wpdb->prefix . 'buddykit_user_files',
+            array('is_tmp' => '0'), 
+            array('user_id' => $user_id),
+            array('%d'),
+            array('%d')
+        );
+    }
+
+    return $media_html;
+
+}
+
+function buddykit_activity_new_endpoint() {
 
     return false;
 }
@@ -215,20 +222,25 @@ function buddykit_user_temporary_media_delete_endpoint(WP_REST_Request $request)
 function buddykit_user_temporary_media_endpoint() {
 
     $final = array();
+    if ( ! class_exists('BuddyKitFileAttachment') ) 
+    {
+        require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';;
+    }
 
     $user_temporary_files = buddykit_get_user_uploaded_files();
-
+   
     if ( ! empty( $user_temporary_files ) ) {
         foreach( $user_temporary_files as $file ) {
             $final[] = array(
                     'name' => $file->name,
-                    'public_url' => $file->url,
+                    'public_url' => BuddyKitFileAttachment::get_user_uploads_url($file->user_id, $is_tmp = true) . $file->name,
                     'user_id' => $file->user_id,
                     'ID' => $file->id,
                     'type' => $file->type
                 );
         }
     }
+
     return $final;
 }
 
@@ -344,11 +356,6 @@ function buddykit_register_scripts() {
     return;
 }
 
-
-/**
- * Testing purposes
- */
-
 function buddykit_html_templates() {
     ?>
     <?php if ( is_user_logged_in() ) {?>
@@ -378,3 +385,5 @@ function buddykit_html_templates() {
     }
     return;
 }
+
+

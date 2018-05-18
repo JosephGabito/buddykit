@@ -208,7 +208,7 @@ class BuddyKitFileAttachment {
 				}
 				// Delete the temporary directory.
 				$fs->rmdir($source_path, $recursive = true);
-				
+
 				return true;
 
 			}else {
@@ -282,14 +282,18 @@ class BuddyKitFileAttachment {
 	 * @param  integer $user_id The id of the user.
 	 * @return string The upload directory of the user.
 	 */
-	public static function get_user_uploads_url( $user_id = 0 ) {
+	public static function get_user_uploads_url( $user_id = 0, $is_tmp = false ) {
 		
 		if ( empty( $user_id ) ) {
 			return false;
 		}
 		
 		$uploads_dir = wp_upload_dir();
-		$user_uploads_dir = $uploads_dir['baseurl'] . '/buddykit/' . $user_id . '/uploads/';
+		$dir = '/uploads/';
+		if ($is_tmp) {
+			$dir = '/tmp/';
+		}
+		$user_uploads_dir = $uploads_dir['baseurl'] . '/buddykit/' . $user_id . $dir;
 		
 		return $user_uploads_dir;
 
