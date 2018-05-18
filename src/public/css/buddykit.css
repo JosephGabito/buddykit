@@ -71,3 +71,8 @@ ul#buddykit-filelist li.buddykit-filelist-item > a.buddykit-filelist-item-delete
     margin-top: 1em;
 }
 /*========== Activity Stream End========== */
+
+/*========== What's new activity form ==== */
+input#aw-whats-new-submit[disabled=disabled] {
+    cursor: not-allowed;
+}
