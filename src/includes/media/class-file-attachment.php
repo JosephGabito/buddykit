@@ -173,13 +173,40 @@ class BuddyKitFileAttachment {
 
 		$fs = new WP_Filesystem_Direct( array() );
 
+		$files_to_be_moved = array();
 		// Move the 'tmp' directory files to 'uploads'
 		// 1. read all the files at temporary directory
 		$tmp_files = $fs->dirlist($source_path);
-		print_r($tmp_files);
-		// 2. create the destination directory('uploads') if dir is not existing
-		// 3. move all files from temporary directory to uploads
-		//return $fs->rmdir($path, $recursive = true);
+		
+		if ( !empty($tmp_files)) {
+
+			// 2. create the destination directory('uploads') if dir is not existing
+			$fs->mkdir($destination_path);
+
+			if ( $fs->is_dir($destination_path)) {
+
+				foreach( $tmp_files as $file ) {
+					//The file from tmp dir
+					$file_source = $source_path . $file['name'];
+					// Get the extension
+					$ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+					// Generate new name which also serves as new destination path
+					$destination_path_source = $destination_path . md5(time().$file['name']) .'.'.$ext;
+					// 3. move all files from temporary directory to uploads via 'copy'
+					$fs->copy($file_source, $destination_path_source);
+				}
+				// Delete the temporary directory.
+				$fs->rmdir($source_path, $recursive = true);
+
+			}else {
+				return false;
+			}
+			
+		} else {
+			return false;
+		}
+		
+		return false;
 
 	}
 
