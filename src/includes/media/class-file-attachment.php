@@ -41,6 +41,7 @@ class BuddyKitFileAttachment {
 			add_filter( 'upload_dir', array( $this, 'set_upload_dir' ) );
 		}
 
+		add_filter( 'wp_handle_upload_prefilter', array( $this, '__buddykit_on_upload_change_file_name' ) );
 	}
 
 	/**
@@ -97,7 +98,9 @@ class BuddyKitFileAttachment {
 			return array( 'error' => __( 'An error occured. Please check maximum size and maximum header size.', 'buddykit' ) );
 		}
 
-		$upload_overwrites = array( 'test_form' => false );
+		$upload_overwrites = array( 
+			'test_form' => false ,
+		);
 
 		// First delete everything in tmp directory.
 		$path = wp_upload_dir();
@@ -124,6 +127,16 @@ class BuddyKitFileAttachment {
 
 	}
 
+	public function __buddykit_on_upload_change_file_name($file){
+		// Generate new name which also serves as new destination path
+		//$file['name'] = 'hello';
+		//print_r($file);
+		//$file['name'] = md5(time().$file['name']);
+		
+		$ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+		$file['name'] = md5(time().$file['name']).'.'.$ext; 
+		return $file;
+	}
 	/**
 	 * Delete the file under a specific task.
 	 *
@@ -188,15 +201,15 @@ class BuddyKitFileAttachment {
 				foreach( $tmp_files as $file ) {
 					//The file from tmp dir
 					$file_source = $source_path . $file['name'];
-					// Get the extension
-					$ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-					// Generate new name which also serves as new destination path
-					$destination_path_source = $destination_path . md5(time().$file['name']) .'.'.$ext;
+					$file_destination = $destination_path . $file['name'];
 					// 3. move all files from temporary directory to uploads via 'copy'
-					$fs->copy($file_source, $destination_path_source);
+					$fs->copy($file_source, $file_destination);
+					
 				}
 				// Delete the temporary directory.
 				$fs->rmdir($source_path, $recursive = true);
+				
+				return true;
 
 			}else {
 				return false;
@@ -264,6 +277,23 @@ class BuddyKitFileAttachment {
 
 	}
 
+	/**
+	 * Returns the user's upload directory
+	 * @param  integer $user_id The id of the user.
+	 * @return string The upload directory of the user.
+	 */
+	public static function get_user_uploads_url( $user_id = 0 ) {
+		
+		if ( empty( $user_id ) ) {
+			return false;
+		}
+		
+		$uploads_dir = wp_upload_dir();
+		$user_uploads_dir = $uploads_dir['baseurl'] . '/buddykit/' . $user_id . '/uploads/';
+		
+		return $user_uploads_dir;
+
+	}
 
 	/**
 	 * Our class destruct mechanism. Since we set the directory path on object creation. We need to revert it back
@@ -275,5 +305,6 @@ class BuddyKitFileAttachment {
 		if ( $this->set_upload_dir ) {
 			remove_filter( 'upload_dir', array( $this, 'set_upload_dir' ) );
 		}
+		remove_filter( 'wp_handle_upload_prefilter', array( $this, '__buddykit_on_upload_change_file_name' ) );
 	}
 }
