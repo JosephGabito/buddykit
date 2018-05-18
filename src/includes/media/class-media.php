@@ -362,7 +362,7 @@ function buddykit_html_templates() {
         <script type="text/template" id="buddykit-file-uploader">
             <div id="container">
                  <a id="browse" href="#" class="button button-primary" style="position: relative; z-index: 1;">
-                    <?php esc_html_e('Attach Photo/Video', 'buddykit'); ?>
+                    <?php esc_html_e('Photo/Video', 'buddykit'); ?>
                 </a>
             </div>
             <div id="buddykit-filelist-wrap">
