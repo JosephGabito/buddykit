@@ -50,6 +50,9 @@ ul#buddykit-filelist li.buddykit-filelist-item > a.buddykit-filelist-item-delete
     padding: 0;
     margin: 0;
 }
+
+
+
 .buddypress ul.buddykit-activity-media-gallery.items-4 li.buddykit-activity-media-gallery-item,
 #buddypress ul.buddykit-activity-media-gallery.items-4 li.buddykit-activity-media-gallery-item {
     flex-basis: 50%;
@@ -61,6 +64,10 @@ ul#buddykit-filelist li.buddykit-filelist-item > a.buddykit-filelist-item-delete
     background: #fff;
     padding: 1px;
     margin: 0;
+}
+.buddypress ul.buddykit-activity-media-gallery.items-7 li.buddykit-activity-media-gallery-item,
+#buddypress ul.buddykit-activity-media-gallery.items-7 li.buddykit-activity-media-gallery-item {
+    flex-basis: 25%;
 }
 .buddypress li.buddykit-activity-media-gallery-item img,
 #buddypress li.buddykit-activity-media-gallery-item img {

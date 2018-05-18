@@ -49,7 +49,7 @@ function __buddykit_update_activity_kses_filter()
     $bp_allowed_tags = bp_get_allowedtags();
    
     $bp_allowed_tags['a']['data-fancybox'] = array();
-   
+
     $bp_allowed_tags['ul'] = array(
                         'class' => array()
                      );
@@ -94,9 +94,10 @@ function buddykit_activity_new_endpoint() {
                     }
                 $media_html .= '</ul>';
             }
-
+            $user_link = bp_core_get_userlink($user_id);
+            $action = sprintf(__('%s uploaded %d new media', 'buddykit'), $user_link, absint( count( $results ) ));
             $args = array(
-                'action' => '<a href="http://example.com/members/bill">Bill</a> uploaded '.absint(count($results)).' new photos',
+                'action' => $action,
                 'content' => apply_filters('buddykit_media_activity_html', $media_html, $results),
                 'component' => 'members',
                 'type' => 'activity_update',
