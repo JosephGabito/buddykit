@@ -169,8 +169,8 @@ jQuery(document).ready(function($){
 	// PlUpload Script
 	var uploader = new plupload.Uploader({
 		runtimes : 'html5,flash,silverlight',
-		browse_button : document.getElementById('browse'),
-		container: document.getElementById('container'),
+		browse_button : document.getElementById('buddykit-browse'),
+		container: document.getElementById('buddykit-container'),
 		url : __buddyKit.rest_upload_uri + 'upload',
 		flash_swf_url: 'vendor/plupload/Moxie.swf',
 		silverlight_xap_url: 'vendor/plupload/Moxie.xap',
@@ -218,8 +218,8 @@ jQuery(document).ready(function($){
 						$('#'+file.id).addClass('done');
 						setTimeout(function(){
 							$('#'+file.id).remove();
-						}, 3000);
-					}, 3000);
+						}, 1500);
+					}, 1500);
 				}
 			},
 			UploadProgress: function(up, file) {
