@@ -10,6 +10,7 @@
  * License: GPLv3
  * Domain Path: /src/languages
  */
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'BUDDYKIT_PATH', trailingslashit( plugin_dir_path(__FILE__) ));
 
