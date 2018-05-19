@@ -81,7 +81,6 @@ class BuddyKitFileAttachment {
 		    require_once( ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php' );
 		}
 
-
 		$fs = new WP_Filesystem_Direct( array() );
 
 		$file = '';
@@ -128,11 +127,6 @@ class BuddyKitFileAttachment {
 	}
 
 	public function __buddykit_on_upload_change_file_name($file){
-		// Generate new name which also serves as new destination path
-		//$file['name'] = 'hello';
-		//print_r($file);
-		//$file['name'] = md5(time().$file['name']);
-		
 		$ext = pathinfo($file['name'], PATHINFO_EXTENSION);
 		$file['name'] = md5(time().$file['name']).'.'.$ext; 
 		return $file;
