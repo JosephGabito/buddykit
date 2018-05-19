@@ -184,22 +184,24 @@ jQuery(document).ready(function($){
 				plupload.each(files, function(file) {
 					document.getElementById(__buddyKit.file_list_container_id ).innerHTML += '<li id="'+file.id+'" class="buddykit-filelist-item">' + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
 				});
+				$('#whats-new').focus().val('').selectRange(0,0);
 				uploader.start();
 			},
 			FileUploaded: function(up, file, response) {
+				
+				var __response = JSON.parse(response.response);
+			
+				if ( 200 === __response.status ) {
 
-				if ( 200 === response.status ) {
-
-					var json_response = JSON.parse(response.response);
-					var image = json_response.image;
+					var image = __response.image;
 					var image_url = image.url;
 
-					if ( json_response.file_id >= 1 ) {
+					if ( __response.file_id >= 1 ) {
 
 						var buddykitFile = new BuddykitFileModel({
 							name: file.name,
 							public_url: image_url,
-							ID: json_response.file_id,
+							ID: __response.file_id,
 							user_id: __buddyKit.current_user_id,
 							type: file.type
 						});
@@ -211,7 +213,13 @@ jQuery(document).ready(function($){
 						console.log('Error @uploader.FileUploaded: Zero file id.');
 					}
 				} else {
-					console.log('Error @uploader.FileUploaded: Response unknown.');
+					$('#'+file.id).html( __response.error_message ).addClass('error');
+					setTimeout(function(){
+						$('#'+file.id).addClass('done');
+						setTimeout(function(){
+							$('#'+file.id).remove();
+						}, 3000);
+					}, 3000);
 				}
 			},
 			UploadProgress: function(up, file) {
@@ -220,10 +228,10 @@ jQuery(document).ready(function($){
 				$('#aw-whats-new-submit').attr('disabled', true);
 			},
 			UploadComplete: function(up, files, response) {
-			
 				$('#aw-whats-new-submit').attr('disabled', false);
 			},
 			Error: function(up, err) {
+
 				document.getElementById('console').appendChild(document.createTextNode("\nError #" + err.code + ": " + err.message));
 				$('#aw-whats-new-submit').attr('disabled', false);
 			}
@@ -243,6 +251,23 @@ jQuery(document).ready(function($){
 			},1250);//put some delay effect.
 		}
 	});
+
+	// auto focus textarea
+	$.fn.selectRange = function(start, end) {
+	    if(!end) end = start; 
+	    return this.each(function() {
+	        if (this.setSelectionRange) {
+	            this.focus();
+	            this.setSelectionRange(start, end);
+	        } else if (this.createTextRange) {
+	            var range = this.createTextRange();
+	            range.collapse(true);
+	            range.moveEnd('character', end);
+	            range.moveStart('character', start);
+	            range.select();
+	        }
+	    });
+	};
 
 	
 });
