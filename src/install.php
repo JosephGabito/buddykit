@@ -1,4 +1,6 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 global $buddykit_db_version;
 global $wpdb;
 
