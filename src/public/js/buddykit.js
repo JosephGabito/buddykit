@@ -82,6 +82,7 @@ jQuery(document).ready(function($){
 			if (e) {
 				e.preventDefault();
 			}
+			$('.buddykit-filelist-item').addClass('loading');
 			$.ajax({
 				url: __buddyKit.rest_upload_uri + 'user-temporary-flush/' + __buddyKit.current_user_id,
 				type: 'DELETE',
@@ -107,7 +108,7 @@ jQuery(document).ready(function($){
 			var file = buddyKitFiles.get(modelId);
 
 			e.preventDefault();
-
+			$(e.target).parent().addClass('loading');
 			file.destroy({
 				wait: true,
 				error: function(model, response) {
