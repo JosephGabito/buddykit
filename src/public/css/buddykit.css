@@ -16,7 +16,20 @@ ul#buddykit-filelist li.buddykit-filelist-item {
     background: #cecece;
     margin: 2.5px 5px;
 }
-
+ul#buddykit-filelist li.buddykit-filelist-item.error{
+    border: 2px solid #ef4343;
+    color: #ef4343;
+    text-align: center;
+    padding-top: 18px;
+    opacity: 1;
+    transition: opacity 1s ease-in-out;
+}
+ul#buddykit-filelist li.buddykit-filelist-item.error.done {
+    opacity: 0;
+}
+ul#buddykit-filelist li.buddykit-filelist-item.loading {
+    opacity: 0.5;
+}
 ul#buddykit-filelist li.buddykit-filelist-item > a.buddykit-filelist-item-delete {
     position: absolute;
     top: 5px;
@@ -62,6 +75,9 @@ ul#buddykit-filelist li.buddykit-filelist-item > a.buddykit-filelist-item-delete
 }
 .buddypress ul.buddykit-activity-media-gallery.items-7 li.buddykit-activity-media-gallery-item{
     flex-basis: 25%;
+}
+.buddypress ul.buddykit-activity-media-gallery.items-8 li.buddykit-activity-media-gallery-item{
+    flex-basis: 20%;
 }
 .buddypress li.buddykit-activity-media-gallery-item img {
     width: 100%;
