@@ -9,12 +9,18 @@ ul#buddykit-filelist li.buddykit-filelist-item {
     list-style: none;
     float: left;
     position: relative;
-    height: 100px;
-    width: 100px;
+    height: 90px;
+    width: 90px;
     overflow: hidden;
     padding: 2px;
     background: #cecece;
-    margin: 2.5px 5px;
+    margin: 0 2.5px 1.25px 0;
+
+}
+#buddykit-filelist-wrap{
+padding: 15px 25px;
+    border-top: 1px solid #eee;
+    margin-top: 15px;
 }
 ul#buddykit-filelist li.buddykit-filelist-item.error{
     border: 2px solid #ef4343;
@@ -93,13 +99,18 @@ input#aw-whats-new-submit[disabled=disabled] {
     cursor: not-allowed;
 }
 /*Upload photo/video button*/
-#browse{
+#buddykit-container {
+    padding: 10px 25px 0 25px;
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+}
+#buddykit-browse{
     border-radius: 20px;
     background: #f6f7f9!important;
     padding: 5px 7.5px;
-    margin: 0 15px;
+    margin: 0 10px 0 0;
 }
-#browse:before {
+#buddykit-browse:before {
     content: "\f233";
     color: #87be49;
     font-family: 'dashicons';
