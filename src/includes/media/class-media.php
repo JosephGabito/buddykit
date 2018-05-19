@@ -1,22 +1,23 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 // Enqueue the script needed
 add_action( 'wp_enqueue_scripts', 'buddykit_register_scripts' );
 // Html Templates
 add_action( 'wp_footer', 'buddykit_html_templates' );
 // Append media to activity
 add_filter('bp_activity_new_update_content', '__buddykit_activity_append_media_content');
+
+add_filter('groups_activity_new_update_content', '__buddykit_activity_append_media_content');
 // We need to register REST API End Point
+add_filter('bp_activity_allowed_tags', '__buddykit_update_activity_kses_filter', 10);
+
 add_action( 'rest_api_init', function () {
 
     // New upload
     register_rest_route( 'buddykit/v1', '/upload', array(
         'methods' => 'POST',
         'callback' => 'buddykit_activity_route_endpoint',
-    ) );
-
-    register_rest_route( 'buddykit/v1', '/activity-new', array(
-        'methods' => 'GET',
-        'callback' => 'buddykit_activity_new_endpoint',
     ) );
 
     // Temporary media list.
@@ -28,7 +29,12 @@ add_action( 'rest_api_init', function () {
     // Delete media
     register_rest_route( 'buddykit/v1', '/user-temporary-media-delete/(?P<id>\d+)', array(
         'methods' => 'DELETE',
-        'callback' => 'buddykit_user_temporary_media_delete_endpoint'
+        'callback' => 'buddykit_user_temporary_media_delete_endpoint',
+        'args' => array(
+                'id' => array(
+                    'validate_callback' => '__is_verified_owner_validate'
+                ),
+            ),
     ) );
 
     // Flush temporary media
@@ -43,7 +49,26 @@ add_action( 'rest_api_init', function () {
     ) );
 });
 
-add_filter('bp_activity_allowed_tags', '__buddykit_update_activity_kses_filter', 10);
+
+
+function __is_verified_owner_validate($file_id) {
+    
+    global $wpdb;
+    
+    $user_id = get_current_user_id();
+    
+    $stmt = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files 
+        WHERE id = %d AND user_id = %d", $file_id, $user_id);
+
+    $result = $wpdb->get_row( $stmt, OBJECT );
+    
+    if ( !empty($result) and is_object($result)) 
+    {
+        return true;
+    }
+    
+    return false;
+}
 
 function __buddykit_update_activity_kses_filter()
 {
@@ -126,11 +151,6 @@ function buddykit_activity_append_media_content () {
 
 }
 
-function buddykit_activity_new_endpoint() {
-
-    return false;
-}
-
 function __does_user_owns_the_file_validate($id)
 {
     return get_current_user_id() === (int) $id;
@@ -150,7 +170,8 @@ function buddykit_user_temporary_media_flush_all_endpoint(WP_REST_Request $reque
     if ( $destroyed ) {
         return new WP_REST_Response(
            array(
-               'message' => 'DELETE_OK'
+                'status' => 200,
+                'message' => 'delete_okay'
            )
        );
     }
@@ -216,13 +237,19 @@ function buddykit_flush_user_tmp_files($user_id) {
 
 function buddykit_user_temporary_media_delete_endpoint(WP_REST_Request $request) {
 
+    if ( ! is_user_logged_in() ) {
+        return false;
+    }
+
     global $wpdb;
 
     $params = $request->get_params();
     $file_id = 0;
+
     if ( !empty ($params['id'])) {
         $file_id = $params['id'];
     }
+
     $stmt = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files WHERE id = %d;", absint($file_id));
     $file = $wpdb->get_row( $stmt, OBJECT );
 
@@ -245,18 +272,24 @@ function buddykit_user_temporary_media_delete_endpoint(WP_REST_Request $request)
         }
 
     } else {
-        echo 'There was an error';
+        return false;
     }
-    return new WP_REST_Response(
-        array(
-            'file' => $file_id
-        )
-    );
+    return new WP_REST_Response( array( 'file' => $file_id ) );
 }
 
 function buddykit_user_temporary_media_endpoint() {
 
     $final = array();
+
+    if ( ! is_user_logged_in() ) {
+         return new WP_REST_Response( 
+            array( 
+                'status' => 401,
+                'message' => 'unauthorized'
+            )
+        );
+    }
+
     if ( ! class_exists('BuddyKitFileAttachment') ) 
     {
         require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';;
@@ -264,7 +297,7 @@ function buddykit_user_temporary_media_endpoint() {
 
     $user_temporary_files = buddykit_get_user_uploaded_files();
    
-    if ( ! empty( $user_temporary_files ) ) {
+    if ( $user_temporary_files && ! empty( $user_temporary_files ) ) {
         foreach( $user_temporary_files as $file ) {
             $final[] = array(
                     'name' => $file->name,
@@ -280,6 +313,10 @@ function buddykit_user_temporary_media_endpoint() {
 }
 
 function buddykit_get_user_uploaded_files($tmp=false) {
+    
+    if ( ! is_user_logged_in() ) {
+        return false;
+    }
 
     global $wpdb;
 
@@ -296,7 +333,14 @@ function buddykit_get_user_uploaded_files($tmp=false) {
  * @return object instance of WP_REST_Response
  */
 function buddykit_activity_route_endpoint() {
-
+    
+    //Make sure there is a logged-in user.
+    if ( ! is_user_logged_in() ) {
+        return new WP_REST_Response(array(
+                'status' => 400,
+                'file_id' => 0
+            ));
+    }
     global $wpdb;
 
     $http_response = array();
@@ -321,12 +365,7 @@ function buddykit_activity_route_endpoint() {
                 'type' => $result['type'],
                 'is_tmp' => 1,
             ),
-            array(
-                '%d',
-                '%s',
-                '%s',
-                '%d',
-            )
+            array('%d', '%s', '%s','%d')
         );
 
     if ( $inserted ) {
@@ -416,6 +455,12 @@ function buddykit_html_templates() {
                 <a data-file-id="<%= ID %>" data-model-id="<%= this.id %>" title="<%= name %>" class="buddykit-filelist-item-delete" href="#"> × </a>
             </li>
         </script>
+        <div id="buddykit-hidden-error-message" style="display: none;">
+            <h2><?php esc_html_e('Oops!', 'buddykit'); ?></h2>
+            <p id="buddykit-hidden-error-message-text">
+                <?php esc_html_e('There was an error performing that action. Please try again later. Thanks!', 'buddykit'); ?>
+            </p>
+        </div>
     <?php
     }
     return;
