@@ -341,16 +341,43 @@ function buddykit_activity_route_endpoint() {
                 'file_id' => 0
             ));
     }
+
     global $wpdb;
 
     $http_response = array();
 
     if ( ! class_exists('BuddyKitFileAttachment') ) {
-        require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';;
+        require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';
     }
 
-    $fs = new BuddyKitFileAttachment();
+     if ( ! class_exists('BuddyKitFileValidator') ) {
+        require_once BUDDYKIT_PATH . 'src/includes/class-file-validator.php';
+    }
 
+    $file ='';
+
+    $fs = new BuddyKitFileAttachment();
+    $fv = new BuddyKitFileValidator($_FILES['file']);
+    
+    $allowed_extensions = array(
+            'jpg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+        );
+    
+    $fv->set_maxsize(5); //5MB
+    $fv->set_allowed_extension($allowed_extensions);
+
+    $validated = $fv->validate($file);
+
+    if (!is_bool($validated) && true !== $validated) {
+        return new WP_REST_Response(array(
+                'status' => 406,
+                'message' => 'file_not_acceptable',
+                'error_message' => $validated
+            ));
+    } 
+    
     $result = $fs->process_http_file();
 
     $http_response['image'] = $result;
