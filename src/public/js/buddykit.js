@@ -91,12 +91,11 @@ jQuery(document).ready(function($){
 					if ( response ) {
 						buddyKitFiles.remove(buddyKitFiles.models)
 					} else {
-						console.warn('There was an error: <flushAllItems> success callback.')
+						$.fancybox.open({src: '#buddykit-hidden-error-message', type: 'inline' });
 					}
 				},
 				error: function(e,y) {
-					console.log(e);
-					console.warn('There was an error: <flushAllItems> http_request.')
+					$.fancybox.open({src: '#buddykit-hidden-error-message', type: 'inline' });
 				}
 			});
 		},
@@ -111,11 +110,8 @@ jQuery(document).ready(function($){
 
 			file.destroy({
 				wait: true,
-				success: function(model, response){
-					console.log('success');
-				},
 				error: function(model, response) {
-					console.log(response);
+					$.fancybox.open({src: '#buddykit-hidden-error-message', type: 'inline' });
 				},
 				url: __buddyKit.rest_upload_uri + 'user-temporary-media-delete/' + fileId,
 				headers: { 'X-WP-Nonce': __buddyKit.nonce }
@@ -211,14 +207,10 @@ jQuery(document).ready(function($){
 						buddyKitFiles.add( buddykitFile );
 
 					} else {
-
 						console.log('Error @uploader.FileUploaded: Zero file id.');
-
 					}
 				} else {
-
 					console.log('Error @uploader.FileUploaded: Response unknown.');
-
 				}
 			},
 			UploadProgress: function(up, file) {
@@ -243,9 +235,12 @@ jQuery(document).ready(function($){
 	 * Old good jQuery events
 	 */
 	$('body').on('click', '#aw-whats-new-submit', function(){
-		setTimeout(function(){
-			buddyKitFiles.remove(buddyKitFiles.models);
-		},1250);//put some delay effect.
+		var status_length = $('#whats-new').val().length;
+		if ( status_length >= 1 ) {
+			setTimeout(function(){
+				buddyKitFiles.remove(buddyKitFiles.models);
+			},1250);//put some delay effect.
+		}
 	});
 
 	
