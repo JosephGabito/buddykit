@@ -112,6 +112,7 @@ function buddykit_activity_append_media_content () {
         
         // Flush the content.
         $flushed = buddykit_flush_user_tmp_files($user_id);
+
         if ( $flushed ) {
             if ( ! class_exists('BuddyKitFileAttachment') )  {
                 require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';;
@@ -124,9 +125,15 @@ function buddykit_activity_append_media_content () {
 
                 foreach( $results as $result ) {
                     $url = BuddyKitFileAttachment::get_user_uploads_url($result->user_id) . $result->name;
+                    
+                    $extension = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION);
+                    $filename  = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_FILENAME);
+
+                    $thumbnail_url = BuddyKitFileAttachment::get_user_uploads_url($result->user_id) . $filename.'-thumbnail.'.$extension;
+
                     $media_html .= '<li class="buddykit-activity-media-gallery-item">';
                         $media_html .= '<a data-fancybox="'.esc_attr($gallery_id).'" title="'.esc_attr($result->name).'" href="'.esc_url($url).'">';
-                            $media_html .= '<img src="'.esc_url($url).'" alt="'.esc_attr($result->name).'" />';
+                            $media_html .= '<img src="'.esc_url($thumbnail_url).'" alt="'.esc_attr($result->name).'" />';
                         $media_html .= '</a>';
                     $media_html .= '</li>';
                 }
