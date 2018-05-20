@@ -57,6 +57,7 @@ jQuery(document).ready(function($){
 			this.collection.on("add", function(){
 				this.addNode();
 				buddyKitGlobalFileCounter++;
+
 			}, this);
 			this.collection.on("remove", function(){
 				this.render();
@@ -64,6 +65,10 @@ jQuery(document).ready(function($){
 			}, this);
 			this.collection.on("change add remove reset", function(){
 				this.showFlushButton();
+				$('#buddykit-filelist-wrap').show();
+				if ( 0 == buddyKitGlobalFileCounter) {
+					$('#buddykit-filelist-wrap').hide();
+				}
 			}, this)
 		},
 		events: {
@@ -174,13 +179,19 @@ jQuery(document).ready(function($){
 		url : __buddyKit.rest_upload_uri + 'upload',
 		flash_swf_url: 'vendor/plupload/Moxie.swf',
 		silverlight_xap_url: 'vendor/plupload/Moxie.xap',
-		filters : {},
+		filters: {
+			  	mime_types : [
+			    	{ title : "Image files", extensions : "jpg,gif,png" },
+			  	]
+			},
+		max_file_size: '1200kb',
 		headers: {
 			'X-WP-Nonce': __buddyKit.nonce
 		},
 		init: {
 			PostInit: function() {},
 			FilesAdded: function(up, files) {
+				$('#buddykit-filelist-wrap').show();
 				plupload.each(files, function(file) {
 					document.getElementById(__buddyKit.file_list_container_id ).innerHTML += '<li id="'+file.id+'" class="buddykit-filelist-item">' + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
 				});
@@ -231,9 +242,29 @@ jQuery(document).ready(function($){
 				$('#aw-whats-new-submit').attr('disabled', false);
 			},
 			Error: function(up, err) {
+				
+				$('#buddykit-filelist-wrap').show();
 
-				document.getElementById('console').appendChild(document.createTextNode("\nError #" + err.code + ": " + err.message));
+				var file_el = document.getElementById(__buddyKit.file_list_container_id );
+				var file_id = err.file.id;
+				
+				file_el.innerHTML += '<li id="'+file_id+'" class="buddykit-filelist-item error"><span>'+err.message+'</span></div>';
+				
+				setTimeout(function(){
+					$('#'+file_id).addClass('done');
+					setTimeout(function(){
+						$('#'+file_id).remove();
+						// Clear if necessary
+						if ( 0 === $('.buddykit-filelist-item').length ) {
+							$('#buddykit-filelist-wrap').hide();
+						}
+					},1000);
+				}, 2000);
+				
 				$('#aw-whats-new-submit').attr('disabled', false);
+
+
+				return;
 			}
 		}
 	}); // End uploaded object.
