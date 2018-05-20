@@ -17,9 +17,18 @@ ul#buddykit-filelist li.buddykit-filelist-item {
 
 }
 #buddykit-filelist-wrap{
-padding: 15px 25px;
-    border-top: 1px solid #eee;
-    margin-top: 15px;
+    padding: 15px 25px;
+}
+a#buddykit-flush-temporary-files-btn.button {
+    background: transparent;
+    padding: 0;
+    margin: 10px 0 0 0;
+    border: 0 none;
+    border-radius: 0;
+    color: red;
+}
+a#buddykit-flush-temporary-files-btn.button:hover {
+    box-shadow: none;
 }
 ul#buddykit-filelist li.buddykit-filelist-item.error{
     border: 2px solid #ef4343;
@@ -31,6 +40,7 @@ ul#buddykit-filelist li.buddykit-filelist-item.error{
 }
 ul#buddykit-filelist li.buddykit-filelist-item.error.done {
     opacity: 0;
+    display: none;
 }
 ul#buddykit-filelist li.buddykit-filelist-item.loading {
     opacity: 0.5;
@@ -99,9 +109,10 @@ input#aw-whats-new-submit[disabled=disabled] {
 }
 /*Upload photo/video button*/
 #buddykit-container {
-    padding: 10px 25px 0 25px;
+    padding: 10px 15px;
     margin-top: 15px;
     border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
 }
 #buddykit-browse{
     border-radius: 20px;
