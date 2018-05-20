@@ -365,8 +365,9 @@ function buddykit_activity_route_endpoint() {
             'png' => 'image/png',
             'gif' => 'image/gif',
         );
-    
-    $fv->set_maxsize(5); //5MB
+    $config = buddykit_config();
+    $max_file_size = absint( $config['config']['max_upload_size'] ) * 1000000;
+    $fv->set_maxsize($max_file_size); //5MB
     $fv->set_allowed_extension($allowed_extensions);
 
     $validated = $fv->validate($file);
@@ -446,8 +447,8 @@ function buddykit_get_user_upload_dir( $is_temporary = false )
 function buddykit_register_scripts() {
 
     wp_enqueue_style( 'buddykit-style', BUDDYKIT_PUBLIC_URI . 'css/buddykit.css', false );
-    wp_enqueue_style( 'fancy-box-style', BUDDYKIT_PUBLIC_URI . 'css/vendor/fancybox/jquery.fancybox.min.css', false );
-    wp_enqueue_script( 'fancy-box-js', BUDDYKIT_PUBLIC_URI . 'js/vendor/fancybox/fancybox.js',  array('jquery'), false );
+    wp_enqueue_style( 'magnific-popup', BUDDYKIT_PUBLIC_URI . 'css/vendor/magnific-popup/magnific-popup.css', false );
+    wp_enqueue_script( 'magnific-popup', BUDDYKIT_PUBLIC_URI . 'js/vendor/magnific-popup/magnific-popup.js',  array('jquery', 'imagesloaded'), false );
 
     if ( is_user_logged_in() ) {
         wp_enqueue_script( 'buddykit-src', BUDDYKIT_PUBLIC_URI . 'js/buddykit.js', 
