@@ -17,7 +17,7 @@ ul#buddykit-filelist li.buddykit-filelist-item {
 
 }
 #buddykit-filelist-wrap{
-    padding: 15px 25px;
+    padding: 15px 15px;
 }
 a#buddykit-flush-temporary-files-btn.button {
     background: transparent;
@@ -109,10 +109,9 @@ input#aw-whats-new-submit[disabled=disabled] {
 }
 /*Upload photo/video button*/
 #buddykit-container {
-    padding: 10px 15px;
+    padding: 10px 15px 0;
     margin-top: 15px;
     border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
 }
 #buddykit-browse{
     border-radius: 20px;
@@ -124,6 +123,8 @@ input#aw-whats-new-submit[disabled=disabled] {
     content: "\f233";
     color: #87be49;
     font-family: 'dashicons';
+    position: relative;
+    top: 2px;
 }
 /*== Spinner *==*/
 .buddykit-filelist-item.loading:after {
