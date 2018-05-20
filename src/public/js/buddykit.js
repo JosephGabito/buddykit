@@ -184,7 +184,7 @@ jQuery(document).ready(function($){
 			    	{ title : "Image files", extensions : "jpg,gif,png" },
 			  	]
 			},
-		max_file_size: '1200kb',
+		max_file_size: __buddyKit.config.max_file_size,
 		headers: {
 			'X-WP-Nonce': __buddyKit.nonce
 		},
@@ -300,5 +300,37 @@ jQuery(document).ready(function($){
 	    });
 	};
 
+	// Magnific popup
+
+	$('.buddykit-activity-media-gallery').magnificPopup({
+		delegate: 'a', type: 'image',
+	  	gallery: {
+	  		enabled: true
+	  	}
+	});
+	$(document).ajaxComplete(function(event,request,settings){
+		if ( settings.data ) {
+			var http_request_data = JSON.parse('{"' + decodeURI(settings.data.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
+			if ( typeof http_request_data === 'object') {
+				if ( http_request_data.object ) {
+					// Now we know that this is a BuddyPress activity object
+					if ( 'activity' === http_request_data.object ) {
+						window.buddykitMagnificPopUpped = false;
+						$('body').on('mouseover', '.buddykit-activity-media-gallery', function(){
+							if ( ! window.buddykitMagnificPopUpped )  {
+								$('.buddykit-activity-media-gallery').each(function(){
+									$(this).magnificPopup({
+										delegate: 'li.buddykit-activity-media-gallery-item > a', type: 'image',
+										gallery: { enabled: true }
+									});
+								});
+								window.buddykitMagnificPopUpped = true;
+							}
+						});
+					}
+				}
+			}
+		}
+	});
 	
 });
