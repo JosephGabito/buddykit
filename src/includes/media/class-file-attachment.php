@@ -126,7 +126,7 @@ class BuddyKitFileAttachment {
 
 	}
 
-	public function __buddykit_on_upload_change_file_name($file){
+	public function __buddykit_on_upload_change_file_name($file) {
 		$ext = pathinfo($file['name'], PATHINFO_EXTENSION);
 		$file['name'] = md5(time().$file['name']).'.'.$ext; 
 		return $file;
@@ -193,11 +193,38 @@ class BuddyKitFileAttachment {
 			if ( $fs->is_dir($destination_path)) {
 
 				foreach( $tmp_files as $file ) {
-					//The file from tmp dir
+
+					// Read the file source
 					$file_source = $source_path . $file['name'];
+					
+					// Edit the image
+					$image = wp_get_image_editor( $file_source);
+					
+					// Crop the image
+					if ( count ( $tmp_files ) > 1 ) {
+						$image->resize( 375, 375, true );
+					} else {
+						$image->resize( 500, 500, true );
+					} 
+					
+					// General thumbnail 				
+					$thumbnail_name = pathinfo($file_source, PATHINFO_FILENAME);
+					$thumbnail_extension = pathinfo($file_source, PATHINFO_EXTENSION);
+
+					$generated_thumbnail_name = $thumbnail_name . '-thumbnail.' . $thumbnail_extension;
+					$thumbnail_source = $source_path . $generated_thumbnail_name;
+
+					// Save to temporary dir
+					$image->save( $thumbnail_source );
+
+					// Save the destination path of thumbnail
+					$thumbnail_final_path = $destination_path . $generated_thumbnail_name;
+
 					$file_destination = $destination_path . $file['name'];
+					
 					// 3. move all files from temporary directory to uploads via 'copy'
 					$fs->copy($file_source, $file_destination);
+					$fs->copy($thumbnail_source, $thumbnail_final_path);
 					
 				}
 				// Delete the temporary directory.
