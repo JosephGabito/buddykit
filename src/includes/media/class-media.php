@@ -467,7 +467,7 @@ function buddykit_html_templates() {
                     <?php esc_html_e('Photo/Video', 'buddykit'); ?>
                 </a>
             </div>
-            <div id="buddykit-filelist-wrap">
+            <div id="buddykit-filelist-wrap" style="display: none;">
                 <ul id="buddykit-filelist"></ul>
                 <div id="buddykit-flush-tmp-files-wrap">
                     <a href="#" style="display: none;" id="buddykit-flush-temporary-files-btn" title="<?php esc_attr_e('Clear All Files','buddykit'); ?>" class="button button-danger">
