@@ -185,6 +185,7 @@ jQuery(document).ready(function($){
 			  	]
 			},
 		max_file_size: __buddyKit.config.max_file_size,
+		unique_names: true,
 		headers: {
 			'X-WP-Nonce': __buddyKit.nonce
 		},
@@ -312,9 +313,13 @@ jQuery(document).ready(function($){
 		if ( settings.data ) {
 			var http_request_data = JSON.parse('{"' + decodeURI(settings.data.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
 			if ( typeof http_request_data === 'object') {
-				if ( http_request_data.object ) {
+				var valid_actions = ['activity_filter', 'post_update'];
+
+				if ( http_request_data.action ) {
+
 					// Now we know that this is a BuddyPress activity object
-					if ( 'activity' === http_request_data.object ) {
+					if ( $.inArray( http_request_data.action , valid_actions) >= 0 ) {
+
 						window.buddykitMagnificPopUpped = false;
 						$('body').on('mouseover', '.buddykit-activity-media-gallery', function(){
 							if ( ! window.buddykitMagnificPopUpped )  {
