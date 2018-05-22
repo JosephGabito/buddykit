@@ -275,14 +275,6 @@ jQuery(document).ready(function($){
 	/**
 	 * Old good jQuery events
 	 */
-	$('body').on('click', '#aw-whats-new-submit', function(){
-		var status_length = $('#whats-new').val().length;
-		if ( status_length >= 1 ) {
-			setTimeout(function(){
-				buddyKitFiles.remove(buddyKitFiles.models);
-			},1250);//put some delay effect.
-		}
-	});
 
 	// auto focus textarea
 	$.fn.selectRange = function(start, end) {
@@ -313,9 +305,15 @@ jQuery(document).ready(function($){
 		if ( settings.data ) {
 			var http_request_data = JSON.parse('{"' + decodeURI(settings.data.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
 			if ( typeof http_request_data === 'object') {
+				
 				var valid_actions = ['activity_filter', 'post_update'];
 
 				if ( http_request_data.action ) {
+					
+					// Hide the button on succesful post update
+					if ( valid_actions[1] === http_request_data.action ){
+						buddyKitFiles.remove(buddyKitFiles.models);
+					}
 
 					// Now we know that this is a BuddyPress activity object
 					if ( $.inArray( http_request_data.action , valid_actions) >= 0 ) {

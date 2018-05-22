@@ -20,4 +20,6 @@ require_once BUDDYKIT_PATH . 'config/config.php';
 
 require_once BUDDYKIT_PATH . 'src/install.php';
 
+require_once BUDDYKIT_PATH . 'src/includes/media/admin-options/admin-options.php';
+
 require_once BUDDYKIT_PATH . 'src/includes/media/class-media.php';
