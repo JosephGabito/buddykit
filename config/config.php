@@ -23,6 +23,7 @@ if ( !defined('FS_CHMOD_DIR') ) {
  * @return array the main configuration
  */
 function buddykit_config() {
+    $options = get_option('buddykit_settings');
     $max_file_size_default = 10000000; //10MB
 	return array(
         'root' => esc_url_raw( rest_url() ),

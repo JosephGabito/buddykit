@@ -33,27 +33,82 @@ function buddykit_settings_init() {
 		'buddykit-settings.php'
 	);
 
+	/**
+	 * Maximum Image Size
+	 */
 	add_settings_field(
 	    'buddykit_field_max_image_size', // The field ID
 	    'Max Image Size', // The label
-	    'buddykit_field_max_image_size_view', // Callback view
+	    'buddykit_field_size_view', // Callback view
 	    'buddykit-settings.php', //Under what settings?
 	    'buddykit_section_media', //Section,
 	   	[
  			'label_for' => 'buddykit_field_max_image_size',
- 			'class' => 'buddykit_field_max_image_size_row'
+ 			'class' => 'buddykit_field_max_image_size_row',
+ 			'default' => 5
+ 		]
+	);
+
+	/**
+	 * Maximum Video Size
+	 */
+	add_settings_field(
+	    'buddykit_field_max_video_size', // The field ID
+	    'Max Video Size', // The label
+	    'buddykit_field_size_view', // Callback view
+	    'buddykit-settings.php', //Under what settings?
+	    'buddykit_section_media', //Section,
+	   	[
+ 			'label_for' => 'buddykit_field_max_video_size',
+ 			'class' => 'buddykit_field_max_video_size_row',
+ 			'default' => 5
+ 		]
+	);
+
+	/**
+	 * Upload Button Label
+	 */
+	add_settings_field(
+	    'buddykit_field_upload_button_label', // The field ID
+	    'Upload Button Label', // The label
+	    'buddykit_field_upload_button_label_view', // Callback view
+	    'buddykit-settings.php', //Under what settings?
+	    'buddykit_section_media', //Section,
+	   	[
+ 			'label_for' => 'buddykit_field_upload_button_label',
+ 			'class' => 'buddykit_field_upload_button_label_row',
+ 			'default' => __('Photo/Video', 'buddykit')
  		]
 	);
 }
 
 function buddykit_settings_sanitize_callback($params) {
+	$prev_options = get_option( 'buddykit_settings' );
 	if ( empty( $params['buddykit_field_max_image_size'] ) ) {
-		add_settings_error('error-max-image-size', 'settings_updated', $message='shit', $type='error');
-		exit;
+		add_settings_error(
+			'error-max-image-size', 
+			'settings_updated', 
+			$message=__('Maximum image size is empty.', 'buddykit'),
+			$type='error'
+		);
+		$options['buddykit_field_max_image_size'] = $prev_options['buddykit_field_max_image_size'];
 	}
+
+	if (!is_integer($params['buddykit_field_max_image_size'])) {
+		add_settings_error(
+			'error-max-image-size', 
+			'settings_updated', 
+			$message=__('Please enter an integer value for maximum image size field.', 'buddykit'),
+			$type='error'
+		);
+		$options['buddykit_field_max_image_size'] = $prev_options['buddykit_field_max_image_size'];
+	} 
+	
 	$options = array(
-		'buddykit_field_max_image_size' => sanitize_text_field($params['buddykit_field_max_image_size']),
+		'buddykit_field_max_image_size' => sanitize_text_field( absint($params['buddykit_field_max_image_size'])),
 	);
+	
+	
 	return $options;
 }
 
@@ -63,6 +118,7 @@ function buddykit_settings_page_view() {
     	$active_tab = 'activity-media'; //default
     }
 	?>
+	<div class="wrap">
 	<h1 class="wp-heading-inline">
 		<?php esc_html_e('Buddykit Settings', 'buddykit'); ?>
 	</h1>
@@ -85,19 +141,30 @@ function buddykit_settings_page_view() {
 		submit_button();
 	?>
 	</form>
+	</div>
 	<?php
-	echo '</div>';
+	
 }
 function buddykit_section_media_view($args) {
 	echo 'All settings related activity media';
 }
 
-function buddykit_field_max_image_size_view($args) {
+function buddykit_field_size_view($args) {
 	$option = get_option('buddykit_settings'); 
 	?>
 		<input id="<?php echo esc_attr( $args['label_for'] ); ?>" 
 		type="text" name="buddykit_settings[<?php echo esc_attr( $args['label_for'] ); ?>]" 
-		value="<?php echo $option[$args['label_for']]; ?>" 
+		value="<?php echo !empty($option[$args['label_for']]) ? $option[$args['label_for']]: $args['default']; ?>" 
+		/>
+	<?php
+}
+
+function buddykit_field_upload_button_label_view($args) {
+	$option = get_option('buddykit_settings'); 
+	?>
+		<input id="<?php echo esc_attr( $args['label_for'] ); ?>" 
+		type="text" name="buddykit_settings[<?php echo esc_attr( $args['label_for'] ); ?>]" 
+		value="<?php echo !empty($option[$args['label_for']]) ? $option[$args['label_for']]: $args['default']; ?>" 
 		/>
 	<?php
 }
