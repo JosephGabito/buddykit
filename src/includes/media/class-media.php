@@ -447,6 +447,10 @@ function buddykit_get_user_upload_dir( $is_temporary = false )
     return trailingslashit( $url . 'uploaded' );
 }
 
+function buddykit_get_options() {
+    get_option('buddykit_settings');
+}
+
 /**
  * Register all needed scripts.
  * @return void
@@ -467,12 +471,13 @@ function buddykit_register_scripts() {
 }
 
 function buddykit_html_templates() {
+    $options = buddykit_config_get_option();
     ?>
     <?php if ( is_user_logged_in() ) {?>
         <script type="text/template" id="buddykit-file-uploader">
             <div id="buddykit-container">
-                 <a id="buddykit-browse" href="#" class="button button-primary" style="position: relative; z-index: 1;">
-                    <?php esc_html_e('Photo/Video', 'buddykit'); ?>
+                <a id="buddykit-browse" href="#" class="button button-primary" style="position: relative; z-index: 1;">
+                    <?php echo esc_html($options['buddykit_field_upload_button_label']); ?>
                 </a>
             </div>
             <div id="buddykit-filelist-wrap" style="display: none;">
