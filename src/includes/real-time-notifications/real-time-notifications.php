@@ -1,6 +1,42 @@
 <?php
 add_action( 'wp_enqueue_scripts', 'buddykit_real_time_notifications' );
 
+function buddykit_real_time_notifications_get_notification( $notification ) {
+	$bp = buddypress();
+	if ( isset( $bp->{ $notification->component_name }->notification_callback ) 
+		&& is_callable( $bp->{ $notification->component_name }->notification_callback ) ) {
+            $description = call_user_func(
+                $bp->{ $notification->component_name }->notification_callback,
+                $notification->component_action,
+                $notification->item_id,
+                $notification->secondary_item_id,
+                1,
+                'string',
+                $notification->id
+            );
+
+        // @deprecated format_notification_function - 1.5
+        } elseif ( isset( $bp->{ $notification->component_name }->format_notification_function ) 
+        	&& function_exists( $bp->{ $notification->component_name }->format_notification_function ) ) {
+            $description = call_user_func(
+                $bp->{ $notification->component_name }->format_notification_function,
+                $notification->component_action,
+                $notification->item_id,
+                $notification->secondary_item_id,
+                1
+            );
+
+        // Allow non BuddyPress components to hook in.
+        } else {
+            /** This filter is documented in bp-notifications/bp-notifications-functions.php */
+            $description = apply_filters_ref_array( 'bp_notifications_get_notifications_for_user', 
+            	array( $notification->component_action, 
+            		$notification->item_id, $notification->secondary_item_id, 1,
+            		 'string', $notification->component_action, $notification->component_name, $notification->id ) 
+            );
+        }
+     return $description;
+}
 function buddykit_real_time_notifications() {
 
     wp_enqueue_style( 'buddykit-rtn-style', BUDDYKIT_PUBLIC_URI . 'css/vendor/snackbar/snackbar.css', false );
@@ -9,7 +45,7 @@ function buddykit_real_time_notifications() {
     return;
 }
 
-add_action('bp_notification_after_save', function( $data ){
+add_action('bp_notification_after_save', function( $notification ){
 	
 	require_once __DIR__ . '/vendor/autoload.php';
 
@@ -23,7 +59,7 @@ add_action('bp_notification_after_save', function( $data ){
 		array('cluster' => $cluster)
 	);
 
-	$notifications = thrive_bp_get_the_notifications_description();
+	$notifications = buddykit_real_time_notifications_get_notification($notification);
 
 	$pusher->trigger('buddykit-notification-channel', 'buddykit-notification-event', 
 		array(
@@ -50,7 +86,7 @@ add_action('wp_footer', function(){
         if ( __buddyKit.current_user_id == data.notification.user_id ) {
         
         	var snack_options = {
-	    		content: '<a href="'+data.format.link+'">'+data.format.text+'</a>', 
+	    		content: data.notification,
 	    		timeout: 10000,
 	    		htmlAllowed: true
 	    	};
