@@ -127,3 +127,42 @@ function buddykit_pusher_push_notification( $notification ) {
 
     return;
 }
+
+
+add_action('buddykit_settings_tab_fields', function(){
+    /**
+     * Upload Button Label
+     */
+   add_settings_section(
+        'buddykit_section_media',
+        'Pusher',
+        'buddykit_section_rtn_view',
+        'buddykit-settings.php'
+    );
+    
+    add_settings_field(
+        'buddykit_rtn_pusher_key', // The field ID
+        'Pusher Key', // The label
+        'buddykit_rtn_pusher_key_view', // Callback view
+        'buddykit-settings.php', // Under what settings?
+        'buddykit_section_media', //Section,
+            [
+                'label_for' => 'buddykit_rtn_pusher_key',
+                'class' => 'buddykit_rtn_pusher_key_row',
+                'default' => '',
+                'description' => __('Pusher API key', 'buddykit')
+            ]
+        );
+});
+function buddykit_section_rtn_view() {
+    echo '<p>';
+    esc_html_e('We use Pusher to serve your real-time notifications. Why Pusher? Base on our experiece, unless you want to mess with websockets, mimicking live events with PHP is easier but it is always unsustainable and expensive. Other plugins, uses short pooling or WordPress Heartbeat API to serve the notifications, which is both bad and makes your server very slow. ');
+    echo '</p>';
+    echo '<p>';
+    esc_html_e('With services like Pusher, Firebase(soon), and Ably(soon), you do not only get a free version but it\'s cheaper to update in the feature compare to updating your server stack to serve your own notifications.','buddykit');
+    echo '</p>';
+}
+
+    function buddykit_rtn_pusher_key_view( $args ) {
+        echo 'tae';
+    } 

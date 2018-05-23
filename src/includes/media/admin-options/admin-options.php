@@ -18,14 +18,14 @@ function buddykit_settings_page_view() {
 		<?php esc_html_e('Buddykit Settings', 'buddykit'); ?>
 	</h1>
 	<h2 class="nav-tab-wrapper">
-                <!-- when tab buttons are clicked we jump back to the same page but with a new parameter that represents the clicked tab. accordingly we make it active -->
-                <a href="?page=buddykit-settings.php&tab=activity-media" class="nav-tab <?php if($active_tab == 'activity-media'){echo 'nav-tab-active';} ?> ">
-                	<?php _e('Activity Media', 'buddykit'); ?>
-                </a>
-                <a href="?page=buddykit-settings.php&tab=ads-options" class="nav-tab <?php if($active_tab == 'ads-options'){echo 'nav-tab-active';} ?>">
-                	<?php _e('Live Notifications (Coming Soon)', 'buddykit'); ?>
-                </a>
-            </h2>
+        <!-- when tab buttons are clicked we jump back to the same page but with a new parameter that represents the clicked tab. accordingly we make it active -->
+        <a href="?page=buddykit-settings.php&tab=activity-media" class="nav-tab <?php if($active_tab == 'activity-media'){echo 'nav-tab-active';} ?> ">
+        	<?php _e('Activity Media', 'buddykit'); ?>
+        </a>
+        <a href="?page=buddykit-settings.php&tab=ads-options" class="nav-tab <?php if($active_tab == 'ads-options'){echo 'nav-tab-active';} ?>">
+        	<?php _e('Live Notifications', 'buddykit'); ?>
+        </a>
+    </h2>
 
 	<?php
 	?>
@@ -41,7 +41,10 @@ function buddykit_settings_page_view() {
 	
 }
 function buddykit_section_media_view($args) {
-	echo 'All settings related in activity media. Invalid inputs will be reverted to safe default values.';
+	$active_tab = filter_input(INPUT_GET, 'tab', FILTER_SANITIZE_STRING );
+	if ( empty( $active_tab) || 'activity-media' == $active_tab ) {
+		echo 'All settings related in activity media. Invalid inputs will be reverted to safe default values.';
+	}
 }
 // Add 'BuddyKit' settings under 'Settings'
 function buddykit_settings_menu() {
@@ -58,6 +61,8 @@ function buddykit_settings_menu() {
 function buddykit_settings_init() {
 
 	$config_default = buddykit_config_settings_default();
+	
+	$active_tab = filter_input(INPUT_GET, 'tab', FILTER_SANITIZE_STRING );
 
 	register_setting(
 		'buddykit-settings.php',
@@ -68,64 +73,79 @@ function buddykit_settings_init() {
         )
 	);
 
-	add_settings_section(
-		'buddykit_section_media',
-		'Activity Media',
-		'buddykit_section_media_view',
-		'buddykit-settings.php'
-	);
+	$tab_title = apply_filters('buddykit_admin_options_tab_title', __('Activity Media', 'buddykit'));
 
-	/**
-	 * Maximum Image Size
-	 */
-	add_settings_field(
-	    'buddykit_field_max_image_size', // The field ID
-	    'Max Image Size', // The label
-	    'buddykit_field_size_view', // Callback view
-	    'buddykit-settings.php', //Under what settings?
-	    'buddykit_section_media', //Section,
-	   	[
- 			'label_for' => 'buddykit_field_max_image_size',
- 			'class' => 'buddykit_field_max_image_size_row',
- 			'default' => $config_default['buddykit_field_max_image_size'],
- 			'description' => esc_html__('The allowed maximum size of the image in MB. 
- 				Value must be an integer.', 'buddykit')
- 		]
-	);
 
-	/**
-	 * Maximum Video Size
-	 */
-	add_settings_field(
-	    'buddykit_field_max_image_number', // The field ID
-	    'Max Images Number', // The label
-	    'buddykit_field_size_view', // Callback view
-	    'buddykit-settings.php', //Under what settings?
-	    'buddykit_section_media', //Section,
-	   	[
- 			'label_for' => 'buddykit_field_max_image_number',
- 			'class' => 'buddykit_field_max_video_size_row',
- 			'default' => $config_default['buddykit_field_max_image_number'],
- 			'description' => esc_html__('Limits the maximum number of images per activity post.', 'buddykit')
- 		]
-	);
+	switch( $active_tab ){
+		case '':
+		case 'activity-media':
 
-	/**
-	 * Upload Button Label
-	 */
-	add_settings_field(
-	    'buddykit_field_upload_button_label', // The field ID
-	    'Upload Button Label', // The label
-	    'buddykit_field_upload_button_label_view', // Callback view
-	    'buddykit-settings.php', // Under what settings?
-	    'buddykit_section_media', //Section,
-		[
- 			'label_for' => 'buddykit_field_upload_button_label',
- 			'class' => 'buddykit_field_upload_button_label_row',
- 			'default' => $config_default['buddykit_field_upload_button_label'],
- 			'description' => __('The label of the button inside the activity stream', 'buddykit')
- 		]
-	);
+			add_settings_section(
+				'buddykit_section_media',
+				$tab_title,
+				'buddykit_section_media_view',
+				'buddykit-settings.php'
+			);
+			/**
+			 * Maximum Image Size
+			 */
+			add_settings_field(
+			    'buddykit_field_max_image_size', // The field ID
+			    'Max Image Size', // The label
+			    'buddykit_field_size_view', // Callback view
+			    'buddykit-settings.php', //Under what settings?
+			    'buddykit_section_media', //Section,
+			   	[
+		 			'label_for' => 'buddykit_field_max_image_size',
+		 			'class' => 'buddykit_field_max_image_size_row',
+		 			'default' => $config_default['buddykit_field_max_image_size'],
+		 			'description' => esc_html__('The allowed maximum size of the image in MB. 
+		 				Value must be an integer.', 'buddykit')
+		 		]
+			);
+
+			/**
+			 * Maximum Video Size
+			 */
+			add_settings_field(
+			    'buddykit_field_max_image_number', // The field ID
+			    'Max Images Number', // The label
+			    'buddykit_field_size_view', // Callback view
+			    'buddykit-settings.php', //Under what settings?
+			    'buddykit_section_media', //Section,
+			   	[
+		 			'label_for' => 'buddykit_field_max_image_number',
+		 			'class' => 'buddykit_field_max_video_size_row',
+		 			'default' => $config_default['buddykit_field_max_image_number'],
+		 			'description' => esc_html__('Limits the maximum number of images per activity post.', 'buddykit')
+		 		]
+			);
+
+			/**
+			 * Upload Button Label
+			 */
+			add_settings_field(
+			    'buddykit_field_upload_button_label', // The field ID
+			    'Upload Button Label', // The label
+			    'buddykit_field_upload_button_label_view', // Callback view
+			    'buddykit-settings.php', // Under what settings?
+			    'buddykit_section_media', //Section,
+				[
+		 			'label_for' => 'buddykit_field_upload_button_label',
+		 			'class' => 'buddykit_field_upload_button_label_row',
+		 			'default' => $config_default['buddykit_field_upload_button_label'],
+		 			'description' => __('The label of the button inside the activity stream', 'buddykit')
+		 		]
+		);
+		break;	
+
+		default:
+				do_action('buddykit_settings_tab_fields');
+		break;
+	}
+
+
+	
 }
 
 function buddykit_settings_sanitize_callback($params) {
