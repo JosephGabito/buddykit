@@ -1,5 +1,13 @@
 <?php
+add_action( 'wp_enqueue_scripts', 'buddykit_real_time_notifications' );
 
+function buddykit_real_time_notifications() {
+
+    wp_enqueue_style( 'buddykit-rtn-style', BUDDYKIT_PUBLIC_URI . 'css/vendor/snackbar/snackbar.css', false );
+    wp_enqueue_script( 'buddykit-rtn-js'  , BUDDYKIT_PUBLIC_URI .  'js/vendor/snackbar/snackbar.js', false );
+
+    return;
+}
 
 add_action('bp_notification_after_save', function( $data ){
 	
@@ -25,7 +33,7 @@ add_action('bp_notification_after_save', function( $data ){
 			$notification->id
 		);
 
-	$pusher->trigger('my-channel', 'my-event', 
+	$pusher->trigger('buddykit-notification-channel', 'buddykit-notification-event', 
 		array(
 			'message' => 'hello world',
 			'notification' => $notification,
@@ -38,18 +46,26 @@ add_action('bp_notification_after_save', function( $data ){
 // Add pusher script
 add_action('wp_footer', function(){
 ?>
+
 <script src="https://js.pusher.com/4.2/pusher.min.js"></script>
 <script>
     var pusher = new Pusher('61d3abc0df34615bffe8', {
 		cluster: 'mt1'
     });
-    var channel = pusher.subscribe('my-channel');
-    channel.bind('my-event', function(data) {
-    	console.log(data.format);
+    var channel = pusher.subscribe('buddykit-notification-channel');
+    channel.bind('buddykit-notification-event', function(data) {
+    	console.log(data);
         if ( __buddyKit.current_user_id == data.notification.user_id ) {
-        	alert(data.format.text);
+        
+        	var snack_options = {
+	    		content: '<a href="'+data.format.link+'">'+data.format.text+'</a>', 
+	    		timeout: 10000,
+	    		htmlAllowed: true
+	    	};
+	    	jQuery.snackbar(snack_options);
         }
     });
+    
 </script>
 <?php
 });
