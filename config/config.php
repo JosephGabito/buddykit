@@ -27,7 +27,8 @@ function buddykit_config_settings_default() {
 }
 
 function buddykit_config_get_option() {
-    return wp_parse_args( get_option('buddykit_settings', buddykit_config_settings_default()) );
+    $options = wp_parse_args( get_option('buddykit_settings'), buddykit_config_settings_default() );
+    return $options;
 }
 /**
  * Main configuration.
