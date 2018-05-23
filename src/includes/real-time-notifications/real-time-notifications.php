@@ -23,20 +23,12 @@ add_action('bp_notification_after_save', function( $data ){
 		array('cluster' => $cluster)
 	);
 
-	$notification = bp_notifications_get_notification( $data->id );
-
-	$format = bp_activity_format_notifications(
-			$notification->component_action,
-			$notification->item_id,
-			$notification->secondary_item_id,
-			$single = 1, 'array',
-			$notification->id
-		);
+	$notifications = thrive_bp_get_the_notifications_description();
 
 	$pusher->trigger('buddykit-notification-channel', 'buddykit-notification-event', 
 		array(
 			'message' => 'hello world',
-			'notification' => $notification,
+			'notification' => $notifications,
 			'format' => $format
 		)
 	);
