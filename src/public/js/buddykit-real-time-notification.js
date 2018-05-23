@@ -6,6 +6,7 @@
  * @since  1.0
  */
 jQuery(document).ready(function($){
+    
     var pusher = new Pusher('61d3abc0df34615bffe8', {
         cluster: 'mt1'
     });
