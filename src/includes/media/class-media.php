@@ -506,5 +506,3 @@ function buddykit_html_templates() {
     }
     return;
 }
-
-

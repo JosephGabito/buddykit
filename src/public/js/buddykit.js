@@ -309,6 +309,7 @@ jQuery(document).ready(function($){
 	  	}
 	});
 	$(document).ajaxComplete(function(event,request,settings){
+
 		if ( settings.data ) {
 			var http_request_data = JSON.parse('{"' + decodeURI(settings.data.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
 			if ( typeof http_request_data === 'object') {
@@ -319,7 +320,12 @@ jQuery(document).ready(function($){
 					
 					// Hide the button on succesful post update
 					if ( valid_actions[1] === http_request_data.action ){
-						buddyKitFiles.remove(buddyKitFiles.models);
+						setTimeout(function(){
+							if( "bp-messages bp-feedback error" !== $('#whats-new-submit').next().attr('class') ) {
+								buddyKitFiles.remove(buddyKitFiles.models);
+							}
+						}, 500);
+							
 					}
 
 					// Now we know that this is a BuddyPress activity object

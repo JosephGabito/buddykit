@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'BUDDYKIT_PATH', trailingslashit( plugin_dir_path(__FILE__) ));
 
-define( 'BUDDYKIT_PUBLIC_URI', trailingslashit( plugin_dir_url( __FILE__ ) . '/src/public/'  ));
+define( 'BUDDYKIT_PUBLIC_URI', trailingslashit( plugin_dir_url( __FILE__ ) . 'src/public/'  ));
 
 require_once BUDDYKIT_PATH . 'config/config.php';
 
@@ -23,3 +23,5 @@ require_once BUDDYKIT_PATH . 'src/install.php';
 require_once BUDDYKIT_PATH . 'src/includes/media/admin-options/admin-options.php';
 
 require_once BUDDYKIT_PATH . 'src/includes/media/class-media.php';
+
+require_once BUDDYKIT_PATH . 'src/includes/real-time-notifications/real-time-notifications.php';

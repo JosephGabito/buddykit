@@ -21,8 +21,8 @@ if ( !defined('FS_CHMOD_DIR') ) {
 function buddykit_config_settings_default() {
     return array(
             'buddykit_field_max_image_size' => 5,
-            'buddykit_field_max_video_size' => 5,
-            'buddykit_field_upload_button_label' => __('Photo/Video', 'buddykit')
+            'buddykit_field_max_image_number' => 9,
+            'buddykit_field_upload_button_label' => __('Upload Photos', 'buddykit')
         );
 }
 
@@ -49,6 +49,7 @@ function buddykit_config() {
         'config' => array(
             'upload_form_container' => apply_filters('buddykit_config_upload_form_container', 'whats-new-form'),
             'max_upload_size' => absint( $max_upload_size ),
+            'options' => buddykit_config_get_option()
         ),
     );
 }
