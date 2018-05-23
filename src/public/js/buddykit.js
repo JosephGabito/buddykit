@@ -184,7 +184,7 @@ jQuery(document).ready(function($){
 			    	{ title : "Image files", extensions : "jpg,gif,png" },
 			  	]
 			},
-		max_file_size: __buddyKit.config.max_file_size,
+		max_file_size: __buddyKit.config.max_upload_size,
 		unique_names: true,
 		headers: {
 			'X-WP-Nonce': __buddyKit.nonce
@@ -193,11 +193,18 @@ jQuery(document).ready(function($){
 			PostInit: function() {},
 			FilesAdded: function(up, files) {
 				$('#buddykit-filelist-wrap').show();
-				plupload.each(files, function(file) {
-					document.getElementById(__buddyKit.file_list_container_id ).innerHTML += '<li id="'+file.id+'" class="buddykit-filelist-item">' + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
-				});
-				$('#whats-new').focus().val('').selectRange(0,0);
-				uploader.start();
+				
+				// Filter maximum number of downloads.
+				if ( buddyKitFiles.length >= __buddyKit.config.options.buddykit_field_max_image_number ) {
+					alert('You have reached the allowed number of images per post.');
+				} else {
+					plupload.each( files, 
+						function(file) {
+							document.getElementById(__buddyKit.file_list_container_id ).innerHTML += '<li id="'+file.id+'" class="buddykit-filelist-item">' + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
+						});
+						$('#whats-new').focus().val('').selectRange(0,0);
+					uploader.start();
+				}
 			},
 			FileUploaded: function(up, file, response) {
 				
