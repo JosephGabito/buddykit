@@ -140,6 +140,7 @@ add_action('buddykit_settings_tab_fields', function(){
         'buddykit-settings.php'
     );
     
+    // App Key
     add_settings_field(
         'buddykit_rtn_pusher_key', // The field ID
         'Pusher Key', // The label
@@ -153,16 +154,68 @@ add_action('buddykit_settings_tab_fields', function(){
                 'description' => __('Pusher API key', 'buddykit')
             ]
         );
+    // App ID
+    add_settings_field(
+        'buddykit_rtn_pusher_app_id', // The field ID
+        'Pusher APP ID', // The label
+        'buddykit_rtn_pusher_key_view', // Callback view
+        'buddykit-settings.php', // Under what settings?
+        'buddykit_section_media', //Section,
+            [
+                'label_for' => 'buddykit_rtn_pusher_app_id',
+                'class' => 'buddykit_rtn_pusher_app_id_row',
+                'default' => '',
+                'description' => __('Enter your Pusher App ID', 'buddykit')
+            ]
+        );
+
+    // Secret Key
+    add_settings_field(
+        'buddykit_rtn_pusher_secret', // The field ID
+        'Pusher Secret', // The label
+        'buddykit_rtn_pusher_key_view', // Callback view
+        'buddykit-settings.php', // Under what settings?
+        'buddykit_section_media', //Section,
+            [
+                'label_for' => 'buddykit_rtn_pusher_secret',
+                'class' => 'buddykit_rtn_pusher_secret_row',
+                'default' => '',
+                'description' => __('Enter your Pusher Secret Token', 'buddykit')
+            ]
+        );
+    // Cluster
+    add_settings_field(
+        'buddykit_rtn_pusher_cluster', // The field ID
+        'Pusher Cluster', // The label
+        'buddykit_rtn_pusher_key_view', // Callback view
+        'buddykit-settings.php', // Under what settings?
+        'buddykit_section_media', //Section,
+            [
+                'label_for' => 'buddykit_rtn_pusher_cluster',
+                'class' => 'buddykit_rtn_pusher_key_row',
+                'default' => '',
+                'description' => __('Enter your Cluster ID', 'buddykit')
+            ]
+        );
 });
 function buddykit_section_rtn_view() {
     echo '<p>';
-    esc_html_e('We use Pusher to serve your real-time notifications. Why Pusher? Base on our experiece, unless you want to mess with websockets, mimicking live events with PHP is easier but it is always unsustainable and expensive. Other plugins, uses short pooling or WordPress Heartbeat API to serve the notifications, which is both bad and makes your server very slow. ');
+    esc_html_e('We use Pusher to serve your real-time notifications. Why Pusher? Mimicking live events with PHP and mySQL is easier, but it is always unsustainable and expensive (Unless you want to mess with websockets). Other plugins, uses short pooling or WordPress Heartbeat API to serve the fake live notifications, which is both bad and makes your server very slow. ');
     echo '</p>';
     echo '<p>';
-    esc_html_e('With services like Pusher, Firebase(soon), and Ably(soon), you do not only get a free version but it\'s cheaper to update in the feature compare to updating your server stack to serve your own notifications.','buddykit');
+    esc_html_e('With services like Pusher, Firebase(soon), and Ably(soon), you do not only get a free version but it\'s cheaper to update in the feature compare to updating your server stack to serve your own notifications. You also get "real" live notifications.','buddykit');
     echo '</p>';
 }
 
     function buddykit_rtn_pusher_key_view( $args ) {
-        echo 'tae';
+        $option = get_option('buddykit_settings'); 
+        ?>
+            <input id="<?php echo esc_attr( $args['label_for'] ); ?>" 
+            type="text" maxlength="<?php echo strlen(ini_get('post_max_size')) - 1; ?>" name="buddykit_settings[<?php echo esc_attr( $args['label_for'] ); ?>]" 
+            value="<?php echo !empty($option[$args['label_for']]) ? $option[$args['label_for']]: $args['default']; ?>" 
+            />
+            <p class="description">
+                <?php echo $args['description']; ?><br/>
+            </p>
+        <?php
     } 
