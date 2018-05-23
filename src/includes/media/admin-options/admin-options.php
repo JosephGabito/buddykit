@@ -97,17 +97,16 @@ function buddykit_settings_init() {
 	 * Maximum Video Size
 	 */
 	add_settings_field(
-	    'buddykit_field_max_video_size', // The field ID
-	    'Max Video Size', // The label
+	    'buddykit_field_max_image_number', // The field ID
+	    'Max Images Number', // The label
 	    'buddykit_field_size_view', // Callback view
 	    'buddykit-settings.php', //Under what settings?
 	    'buddykit_section_media', //Section,
 	   	[
- 			'label_for' => 'buddykit_field_max_video_size',
+ 			'label_for' => 'buddykit_field_max_image_number',
  			'class' => 'buddykit_field_max_video_size_row',
- 			'default' => $config_default['buddykit_field_max_video_size'],
- 			'description' => esc_html__('The allowed maximum size of the video in MB. 
- 				Value must be an integer.', 'buddykit')
+ 			'default' => $config_default['buddykit_field_max_image_number'],
+ 			'description' => esc_html__('Limits the maximum number of images per activity post.', 'buddykit')
  		]
 	);
 
@@ -133,8 +132,6 @@ function buddykit_settings_sanitize_callback($params) {
 	
 	$config_default = buddykit_config_settings_default();
 
-	require_once BUDDYKIT_PATH . 'src/includes/media/admin-options/validate/autoload.php';
-
 	$prev_options = get_option( 'buddykit_settings' );
 	// Maximum image size settings.
 	$max_image_size = filter_var( $params['buddykit_field_max_image_size'], FILTER_VALIDATE_INT, array(
@@ -144,10 +141,10 @@ function buddykit_settings_sanitize_callback($params) {
 					'max_range' => intval( ini_get('post_max_size') )
 				)
 		));
-	// Maximum video size settings.
-	$max_video_size = filter_var( $params['buddykit_field_max_video_size'], FILTER_VALIDATE_INT, array(
+	// Maximum number of images.
+	$max_image_number = filter_var( $params['buddykit_field_max_image_number'], FILTER_VALIDATE_INT, array(
 			'options' => array(
-					'default' => $config_default['buddykit_field_max_video_size'],
+					'default' => $config_default['buddykit_field_max_image_number'],
 					'min_range' => 1,
 					'max_range' => intval( ini_get('post_max_size') )
 				)
@@ -161,7 +158,7 @@ function buddykit_settings_sanitize_callback($params) {
 
 	$options = array(
 		'buddykit_field_max_image_size' => sanitize_text_field( $max_image_size ),
-		'buddykit_field_max_video_size' => sanitize_text_field( $max_video_size ),
+		'buddykit_field_max_image_number' => sanitize_text_field( $max_image_number ),
 		'buddykit_field_upload_button_label' => sanitize_text_field( $params['buddykit_field_upload_button_label'] ),
 	);
 	
