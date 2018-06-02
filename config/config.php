@@ -45,9 +45,15 @@ function buddykit_config_get_option() {
  * @return array the main configuration
  */
 function buddykit_config() {
+	
 	$options = buddykit_config_get_option();
 	$field_max_size = $options['buddykit_field_max_image_size'];
 	$max_upload_size = $field_max_size * 1000000; // 10MB
+
+	// !Important Remove secret keys.
+	unset( $options['buddykit_rtn_pusher_secret'] );
+	unset( $options['buddykit_rtn_pusher_app_id'] );
+
 	return array(
 		'root' => esc_url_raw( rest_url() ),
 		'nonce' => wp_create_nonce( 'wp_rest' ),
@@ -60,7 +66,7 @@ function buddykit_config() {
 		'config' => array(
 			'upload_form_container' => apply_filters( 'buddykit_config_upload_form_container', 'whats-new-form' ),
 			'max_upload_size' => absint( $max_upload_size ),
-			'options' => buddykit_config_get_option(),
+			'options' => $options,
 		),
 	);
 }
