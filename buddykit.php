@@ -9,12 +9,24 @@
  * Text Domain: buddykit
  * License: GPLv3
  * Domain Path: /src/languages
+ *
+ * ------------------------------------------------------------
+ *
+ * This file is part of the Buddykit WordPress Plugin package.
+ *
+ * (c) Dunhakdis SC. <joseph@useissuestabinstead.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package buddykit/bootstrap
  */
-if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'BUDDYKIT_PATH', trailingslashit( plugin_dir_path(__FILE__) ));
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'BUDDYKIT_PUBLIC_URI', trailingslashit( plugin_dir_url( __FILE__ ) . 'src/public/'  ));
+define( 'BUDDYKIT_PATH', trailingslashit( plugin_dir_path( __FILE__ ) ) );
+
+define( 'BUDDYKIT_PUBLIC_URI', trailingslashit( plugin_dir_url( __FILE__ ) . 'src/public/' ) );
 
 require_once BUDDYKIT_PATH . 'config/config.php';
 
