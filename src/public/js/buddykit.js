@@ -3,6 +3,10 @@
  */
 jQuery(document).ready(function($){
 
+	if ( typeof __buddyKit === 'undefined' ) {
+		return;
+	}
+
 	window.buddyKitGlobalFileCounter = 0;
 	// =========================================================
 	// Our Model
@@ -181,7 +185,8 @@ jQuery(document).ready(function($){
 		silverlight_xap_url: 'vendor/plupload/Moxie.xap',
 		filters: {
 			  	mime_types : [
-			    	{ title : "Image files", extensions : "jpeg,jpg,gif,png" },
+			    	{ title: "Image files", extensions: "jpeg,jpg,gif,png" },
+			    	{ title: "Video files", extensions: "mp4" }
 			  	]
 			},
 		max_file_size: __buddyKit.config.max_upload_size,

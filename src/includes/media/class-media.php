@@ -9,7 +9,6 @@
  *
  * @package BuddyKit\Media
  */
-
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 // Enqueue the script needed.
@@ -27,6 +26,7 @@ add_filter( 'groups_activity_new_update_content', '__buddykit_activity_append_me
 // We need to register REST API End Point.
 add_filter( 'bp_activity_allowed_tags', '__buddykit_update_activity_kses_filter', 10 );
 
+// Register our rest api endpoint.
 add_action( 'rest_api_init', function () {
 
 	// New upload.
@@ -104,6 +104,15 @@ function __buddykit_update_activity_kses_filter() {
 	$bp_allowed_tags['li'] = array(
 						'class' => array(),
 					 );
+
+	$bp_allowed_tags['video'] = array(
+						'width' => array(),
+						'height' => array(),
+						'class' => array(),
+						'src' => array(),
+						'controls' => array(),
+						'data-mejsoptions' => array(),
+					);
 	return $bp_allowed_tags;
 }
 
@@ -163,11 +172,17 @@ function buddykit_activity_append_media_content() {
 				$filename  = pathinfo( wp_parse_url( $url, PHP_URL_PATH ), PATHINFO_FILENAME );
 
 				$thumbnail_url = BuddyKitFileAttachment::get_user_uploads_url( $result->user_id ) . $filename.'-thumbnail.'.$extension;
-
+				$allowed_video_extensions= array('mp4');
 				$media_html .= '<li class="buddykit-activity-media-gallery-item">';
-					$media_html .= '<a data-fancybox="'.esc_attr( $gallery_id ).'" title="'.esc_attr( $result->name ).'" href="'.esc_url( $url ).'">';
-						$media_html .= '<img src="'.esc_url( $thumbnail_url ).'" alt="'.esc_attr( $result->name ).'" />';
-					$media_html .= '</a>';
+					
+					if ( in_array( $extension, $allowed_video_extensions ) ) {
+						$media_html .= '<video src="'.esc_url($url).'" width="100%" height="325" class="mejs__player" controls data-mejsoptions="{\'alwaysShowControls\': \'true\'}"\'></video>';
+					} else {
+						$media_html .= '<a data-fancybox="'.esc_attr( $gallery_id ).'" title="'.esc_attr( $result->name ).'" href="'.esc_url( $url ).'">';
+							$media_html .= '<img src="'.esc_url( $thumbnail_url ).'" alt="'.esc_attr( $result->name ).'" />';
+						$media_html .= '</a>';
+					}
+					
 				$media_html .= '</li>';
 
 			}
@@ -431,12 +446,16 @@ function buddykit_activity_route_endpoint() {
 
 	$allowed_extensions = array(
 			'jpeg' => 'image/jpeg',
-			'jpg' => 'image/jpeg',
-			'png' => 'image/png',
-			'gif' => 'image/gif',
+			'jpg'  => 'image/jpeg',
+			'png'  => 'image/png',
+			'gif'  => 'image/gif',
+
+			'mp4'  => 'video/mp4',
 		);
+
 	$config = buddykit_config();
 	$max_file_size = absint( $config['config']['max_upload_size'] ) * 1000000;
+
 	$fv->set_maxsize( $max_file_size ); // 5MB
 	$fv->set_allowed_extension( $allowed_extensions );
 
@@ -518,15 +537,15 @@ function buddykit_get_user_upload_dir( $is_temporary = false ) {
  */
 function buddykit_register_scripts() {
 
-	wp_enqueue_style( 'buddykit-style', BUDDYKIT_PUBLIC_URI . 'css/buddykit.css', false );
-	wp_enqueue_style( 'magnific-popup', BUDDYKIT_PUBLIC_URI . 'css/vendor/magnific-popup/magnific-popup.css', false );
-	wp_enqueue_script( 'magnific-popup', BUDDYKIT_PUBLIC_URI . 'js/vendor/magnific-popup/magnific-popup.js',  array( 'jquery', 'imagesloaded' ), false );
 
-	if ( is_user_logged_in() ) {
-		wp_enqueue_script( 'buddykit-src', BUDDYKIT_PUBLIC_URI . 'js/buddykit.js',
-		array( 'plupload-html5', 'backbone', 'underscore' ), false );
-		wp_localize_script( 'buddykit-src', '__buddyKit', buddykit_config() );
-	}
+	 wp_enqueue_style( 'buddykit-style', BUDDYKIT_PUBLIC_URI . 'css/buddykit.css', false );
+	 wp_enqueue_style( 'magnific-popup', BUDDYKIT_PUBLIC_URI . 'css/vendor/magnific-popup/magnific-popup.css', false );
+
+	wp_enqueue_script( 'wp-mediaelement' );
+	wp_enqueue_script( 'magnific-popup', BUDDYKIT_PUBLIC_URI . 'js/vendor/magnific-popup/magnific-popup.js',  array( 'jquery', 'imagesloaded' ), false );
+	wp_enqueue_script( 'buddykit-src', BUDDYKIT_PUBLIC_URI . 'js/buddykit.js', array( 'plupload-html5', 'backbone', 'underscore' ), false );
+	
+	wp_localize_script( 'buddykit-src', '__buddyKit', buddykit_config() );
 
 	return;
 }
@@ -557,10 +576,16 @@ function buddykit_html_templates() {
 
         <script type="text/template" id="buddykit-file-list-template">
             <li class="buddykit-filelist-item">
-                <img width="150" src="<%= public_url %>" alt="<%= name %>">
-                <a data-file-id="<%= ID %>" data-model-id="<%= this.id %>" title="<%= name %>" class="buddykit-filelist-item-delete" href="#"> × </a>
+            	<% if ( type.indexOf('video') >= 0) { %>
+            		<video src="<%= public_url %>" width="90" height="90" class="mejs__player" data-mejsoptions='"alwaysShowControls": "true"}'>
+            		</video>
+            	<% } else { %>
+            		 <img width="150" src="<%= public_url %>" alt="<%= name %>">
+            	<% } %>
+                <a data-file-id="<%= ID %>" data-model-id="<%= this.id %>" title="<%= name %>" class="buddykit-filelist-item-delete" href="#"> &times; </a>
             </li>
         </script>
+
         <div id="buddykit-hidden-error-message" style="display: none;">
             <h2><?php esc_html_e( 'Oops!', 'buddykit' ); ?></h2>
             <p id="buddykit-hidden-error-message-text">
