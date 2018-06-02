@@ -7,7 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
- * @package BuddyKit\TaskBreakerCore\FileAttachments
+ * @package BuddyKit\Media\FileAttachments
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -41,7 +41,7 @@ class BuddyKitFileAttachment {
 			add_filter( 'upload_dir', array( $this, 'set_upload_dir' ) );
 		}
 
-		add_filter( 'wp_handle_upload_prefilter', array( $this, '__buddykit_on_upload_change_file_name' ) );
+		add_filter( 'wp_handle_upload_prefilter', array( $this, 'buddykit_on_upload_change_file_name' ) );
 	}
 
 	/**
@@ -97,8 +97,8 @@ class BuddyKitFileAttachment {
 			return array( 'error' => __( 'An error occured. Please check maximum size and maximum header size.', 'buddykit' ) );
 		}
 
-		$upload_overwrites = array( 
-			'test_form' => false ,
+		$upload_overwrites = array(
+			'test_form' => false,
 		);
 
 		// First delete everything in tmp directory.
@@ -110,14 +110,12 @@ class BuddyKitFileAttachment {
 			require_once( ABSPATH . 'wp-admin/includes/file.php' );
 		}
 
-		// Check for existing directory
+		// Check for existing directory.
 		if ( $fs->is_dir( $tmp_dir ) ) {
 			return wp_handle_upload( $file, $upload_overwrites );
 		} else {
 			// Re-create the directory.
-			if ( $fs->mkdir( $tmp_dir ) ) {
-			// Then, move the file.
-			} else {
+			if ( ! $fs->mkdir( $tmp_dir ) ) {
 				return array( 'error' => __( 'Unable to create temporary directory. Permission error.', 'buddykit' ) );
 			}
 		}
@@ -126,17 +124,21 @@ class BuddyKitFileAttachment {
 
 	}
 
-	public function __buddykit_on_upload_change_file_name($file) {
-		$ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-		$file['name'] = md5(time().$file['name']).'.'.$ext; 
+	/**
+	 * Changes the filename on update for integrity.
+	 * @param  array $file The file.
+	 * @return array The file.
+	 */
+	public function buddykit_on_upload_change_file_name( $file ) {
+		$ext = pathinfo( $file['name'], PATHINFO_EXTENSION );
+		$file['name'] = md5( time().$file['name'] ).'.'.$ext;
 		return $file;
 	}
 	/**
 	 * Delete the file under a specific task.
 	 *
-	 * @param  integer $task_id   The id of the task.
-	 * @param  string  $file_name The file name of the attached file.
-	 * @return boolean             True on success. Otherwise, false.
+	 * @param  string $file_name The file name of the attached file.
+	 * @return boolean True on success. Otherwise, false.
 	 */
 	public function delete_file( $file_name = '' ) {
 
@@ -152,14 +154,18 @@ class BuddyKitFileAttachment {
 		$fs = new WP_Filesystem_Direct( $args = array() );
 
 		// Start deleting the file.
-
 		$path = $this->get_current_user_file_path( $file_name, $is_tmp = true );
 
 		return $fs->delete( $path );
 
 	}
 
-	public function flush_dir($user_id) {
+	/**
+	 * Removes temporary media files and updates the status in the database.
+	 * @param  integer $user_id The user id.
+	 * @return boolean True on success. Otherwise, false.
+	 */
+	public function flush_dir( $user_id ) {
 
 		if ( empty( $user_id ) ) {
 			return false;
@@ -181,71 +187,72 @@ class BuddyKitFileAttachment {
 		$fs = new WP_Filesystem_Direct( array() );
 
 		$files_to_be_moved = array();
-		// Move the 'tmp' directory files to 'uploads'
-		// 1. read all the files at temporary directory
-		$tmp_files = $fs->dirlist($source_path);
-		
-		if ( !empty($tmp_files)) {
+		// Move the 'tmp' directory files to 'uploads'.
+		// 1. read all the files at temporary directory.
+		$tmp_files = $fs->dirlist( $source_path );
 
-			// 2. create the destination directory('uploads') if dir is not existing
-			$fs->mkdir($destination_path);
+		if ( ! empty( $tmp_files ) ) {
 
-			if ( $fs->is_dir($destination_path)) {
+			// 2. create the destination directory('uploads') if dir is not existing.
+			$fs->mkdir( $destination_path );
 
-				foreach( $tmp_files as $file ) {
+			if ( $fs->is_dir( $destination_path ) ) {
 
-					// Read the file source
+				foreach ( $tmp_files as $file ) {
+
+					// Read the file source.
 					$file_source = $source_path . $file['name'];
-					
-					// Edit the image
-					$image = wp_get_image_editor( $file_source);
-					
-					// Crop the image
-					if ( count ( $tmp_files ) > 1 ) {
+
+					// Edit the image.
+					$image = wp_get_image_editor( $file_source );
+
+					// Crop the image.
+					if ( count( $tmp_files ) > 1 ) {
 						$image->resize( 375, 375, true );
 					} else {
 						$image->resize( 500, 500, true );
-					} 
-					
-					// General thumbnail 				
-					$thumbnail_name = pathinfo($file_source, PATHINFO_FILENAME);
-					$thumbnail_extension = pathinfo($file_source, PATHINFO_EXTENSION);
+					}
+
+					// General thumbnail.
+					$thumbnail_name = pathinfo( $file_source, PATHINFO_FILENAME );
+					$thumbnail_extension = pathinfo( $file_source, PATHINFO_EXTENSION );
 
 					$generated_thumbnail_name = $thumbnail_name . '-thumbnail.' . $thumbnail_extension;
 					$thumbnail_source = $source_path . $generated_thumbnail_name;
 
-					// Save to temporary dir
+					// Save to temporary dir.
 					$image->save( $thumbnail_source );
 
-					// Save the destination path of thumbnail
+					// Save the destination path of thumbnail.
 					$thumbnail_final_path = $destination_path . $generated_thumbnail_name;
 
 					$file_destination = $destination_path . $file['name'];
-					
-					// 3. move all files from temporary directory to uploads via 'copy'
-					$fs->copy($file_source, $file_destination);
-					$fs->copy($thumbnail_source, $thumbnail_final_path);
-					
+
+					// 3. move all files from temporary directory to uploads via 'copy'.
+					$fs->copy( $file_source, $file_destination );
+					$fs->copy( $thumbnail_source, $thumbnail_final_path );
+
 				}
 				// Delete the temporary directory.
-				$fs->rmdir($source_path, $recursive = true);
+				$fs->rmdir( $source_path, $recursive = true );
 
 				return true;
 
-			}else {
+			} else {
 				return false;
 			}
-			
 		} else {
 			return false;
 		}
-		
+
 		return false;
 
 	}
 
 	/**
 	 * Returns the current logged-in user file path.
+	 * @param  string  $name The file name.
+	 * @param  boolean $is_tmp If directory is temporary or not.
 	 */
 	public function get_current_user_file_path( $name = '', $is_tmp = false ) {
 
@@ -301,21 +308,22 @@ class BuddyKitFileAttachment {
 	/**
 	 * Returns the user's upload directory
 	 * @param  integer $user_id The id of the user.
+	 * @param  boolean $is_tmp If directory is temporary or not.
 	 * @return string The upload directory of the user.
 	 */
 	public static function get_user_uploads_url( $user_id = 0, $is_tmp = false ) {
-		
+
 		if ( empty( $user_id ) ) {
 			return false;
 		}
-		
+
 		$uploads_dir = wp_upload_dir();
 		$dir = '/uploads/';
-		if ($is_tmp) {
+		if ( $is_tmp ) {
 			$dir = '/tmp/';
 		}
 		$user_uploads_dir = $uploads_dir['baseurl'] . '/buddykit/' . $user_id . $dir;
-		
+
 		return $user_uploads_dir;
 
 	}
@@ -330,6 +338,6 @@ class BuddyKitFileAttachment {
 		if ( $this->set_upload_dir ) {
 			remove_filter( 'upload_dir', array( $this, 'set_upload_dir' ) );
 		}
-		remove_filter( 'wp_handle_upload_prefilter', array( $this, '__buddykit_on_upload_change_file_name' ) );
+		remove_filter( 'wp_handle_upload_prefilter', array( $this, 'buddykit_on_upload_change_file_name' ) );
 	}
 }
