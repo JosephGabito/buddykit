@@ -153,22 +153,63 @@ function buddykit_settings_sanitize_callback($params) {
 	$config_default = buddykit_config_settings_default();
 
 	$prev_options = get_option( 'buddykit_settings' );
+
+	$options = array();
+
 	// Maximum image size settings.
-	$max_image_size = filter_var( $params['buddykit_field_max_image_size'], FILTER_VALIDATE_INT, array(
+	if ( isset( $params['buddykit_field_max_image_size'] ) ) {
+		$max_image_size = filter_var( $params['buddykit_field_max_image_size'], FILTER_VALIDATE_INT, array(
 			'options' => array(
 					'default' => $config_default['buddykit_field_max_image_size'],
 					'min_range' => 1,
 					'max_range' => intval( ini_get('post_max_size') )
 				)
 		));
+		$options['buddykit_field_max_image_size'] = sanitize_text_field( $max_image_size );
+	}
+
 	// Maximum number of images.
-	$max_image_number = filter_var( $params['buddykit_field_max_image_number'], FILTER_VALIDATE_INT, array(
+	if ( isset( $params['buddykit_field_max_image_number'] ) ) {
+
+		$max_image_number = filter_var( $params['buddykit_field_max_image_number'], FILTER_VALIDATE_INT, array(
 			'options' => array(
 					'default' => $config_default['buddykit_field_max_image_number'],
 					'min_range' => 1,
 					'max_range' => intval( ini_get('post_max_size') )
 				)
 		));
+		$options['buddykit_field_max_image_number'] = sanitize_text_field( $max_image_number );
+	}
+
+	// Upload Label
+	if ( isset( $params['buddykit_field_upload_button_label'] ) ) {
+		$options['buddykit_field_upload_button_label'] = sanitize_text_field( $params['buddykit_field_upload_button_label'] );
+	}
+
+	// Enable/disable Live Notifications
+	
+	if ( isset( $params['buddykit_rtn_is_enabled']) ) {
+		$options['buddykit_rtn_is_enabled'] = sanitize_text_field( $params['buddykit_rtn_is_enabled'] );
+	} else {
+		$options['buddykit_rtn_is_enabled'] = 0;
+	}
+
+	// Pusher Key.
+	if ( isset( $params['buddykit_rtn_pusher_key']) ) {
+		$options['buddykit_rtn_pusher_key'] = sanitize_text_field( $params['buddykit_rtn_pusher_key'] );
+	}
+	// Pusher App ID.
+	if ( isset( $params['buddykit_rtn_pusher_app_id']) ) {
+		$options['buddykit_rtn_pusher_app_id'] = sanitize_text_field( $params['buddykit_rtn_pusher_app_id'] );
+	}
+	// Pusher Secret.
+	if ( isset( $params['buddykit_rtn_pusher_secret']) ) {
+		$options['buddykit_rtn_pusher_secret'] = sanitize_text_field( $params['buddykit_rtn_pusher_secret'] );
+	}
+	// Pusher Cluster.
+	if ( isset( $params['buddykit_rtn_pusher_cluster']) ) {
+		$options['buddykit_rtn_pusher_cluster'] = sanitize_text_field( $params['buddykit_rtn_pusher_cluster'] );
+	}
 
 	if ( ! empty( $errors ) ) {
 		foreach( $errors as $error ) {
@@ -176,13 +217,9 @@ function buddykit_settings_sanitize_callback($params) {
 		}
 	}
 
-	$options = array(
-		'buddykit_field_max_image_size' => sanitize_text_field( $max_image_size ),
-		'buddykit_field_max_image_number' => sanitize_text_field( $max_image_number ),
-		'buddykit_field_upload_button_label' => sanitize_text_field( $params['buddykit_field_upload_button_label'] ),
-	);
-	
-	return $options;
+	$__options = wp_parse_args($options, $prev_options);
+
+	return $__options;
 
 }
 
