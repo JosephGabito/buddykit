@@ -336,6 +336,28 @@ jQuery(document).ready(function($){
 					// Now we know that this is a BuddyPress activity object
 					if ( $.inArray( http_request_data.action , valid_actions) >= 0 ) {
 
+						setTimeout(function(){
+							return;
+							var player_options = {
+								controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', '', 'pip', 'airplay', 'fullscreen'],
+								ratio: '16:16'
+							};
+
+							const players = Array.from( document.querySelectorAll('.buddykit-media-video') ).map( p => new Plyr(p, player_options) );
+							$.each(players, function(index, player){
+								var current_player = player;
+								current_player.on('play', function(){
+									$('.plyr__controls', $(this)).css('opacity', 1);
+								});	
+								current_player.on('pause', function(){
+									$('.plyr__controls', $(this)).css('opacity', 0);
+								})
+							});
+							
+						
+						}, 500);
+						
+
 						window.buddykitMagnificPopUpped = false;
 						$('body').on('mouseover', '.buddykit-activity-media-gallery', function(){
 							if ( ! window.buddykitMagnificPopUpped )  {
@@ -345,6 +367,7 @@ jQuery(document).ready(function($){
 										gallery: { enabled: true }
 									});
 								});
+
 								window.buddykitMagnificPopUpped = true;
 							}
 						});
@@ -353,5 +376,7 @@ jQuery(document).ready(function($){
 			}
 		}
 	});
+	
+
 	
 });

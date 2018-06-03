@@ -105,6 +105,10 @@ function __buddykit_update_activity_kses_filter() {
 						'class' => array(),
 					 );
 
+	$bp_allowed_tags['div'] = array(
+						'class' => array(),
+					 );
+
 	$bp_allowed_tags['video'] = array(
 						'width' => array(),
 						'height' => array(),
@@ -173,17 +177,26 @@ function buddykit_activity_append_media_content() {
 
 				$thumbnail_url = BuddyKitFileAttachment::get_user_uploads_url( $result->user_id ) . $filename.'-thumbnail.'.$extension;
 				$allowed_video_extensions= array('mp4');
-				$media_html .= '<li class="buddykit-activity-media-gallery-item">';
+				
 					
 					if ( in_array( $extension, $allowed_video_extensions ) ) {
-						$media_html .= '<video src="'.esc_url($url).'" width="100%" height="325" class="mejs__player" controls data-mejsoptions="{\'alwaysShowControls\': \'true\'}"\'></video>';
+						$media_html .= '<li class="buddykit-activity-media-gallery-item type-video">';
+							$media_html .= '<div class="buddykit-media-wrap">';
+								$media_html .= '<div class="buddykit-media-button-play-wrap">';
+									$media_html .= '<div class="buddykit-media-button-play"></div>';
+								$media_html .= '</div>';
+								$media_html .= '<video src="'.esc_url($url).'" width="100%" height="100%" class="buddykit-media-video"></video>';
+							$media_html .= '</div>';
+						$media_html .= '</li>';
 					} else {
-						$media_html .= '<a data-fancybox="'.esc_attr( $gallery_id ).'" title="'.esc_attr( $result->name ).'" href="'.esc_url( $url ).'">';
-							$media_html .= '<img src="'.esc_url( $thumbnail_url ).'" alt="'.esc_attr( $result->name ).'" />';
-						$media_html .= '</a>';
+						$media_html .= '<li class="buddykit-activity-media-gallery-item type-image">';
+							$media_html .= '<a data-fancybox="'.esc_attr( $gallery_id ).'" title="'.esc_attr( $result->name ).'" href="'.esc_url( $url ).'">';
+								$media_html .= '<img src="'.esc_url( $thumbnail_url ).'" alt="'.esc_attr( $result->name ).'" />';
+							$media_html .= '</a>';
+						$media_html .= '</li>';
 					}
 					
-				$media_html .= '</li>';
+				
 
 			}
 
@@ -537,12 +550,20 @@ function buddykit_get_user_upload_dir( $is_temporary = false ) {
  */
 function buddykit_register_scripts() {
 
+	// Buddykit stylesheet.
+	wp_enqueue_style( 'buddykit-style', BUDDYKIT_PUBLIC_URI . 'css/buddykit.css', false );
+	// Magnific popup stylesheet.
+	wp_enqueue_style( 'magnific-popup', BUDDYKIT_PUBLIC_URI . 'css/vendor/magnific-popup/magnific-popup.css', false );
+	// Plyr stylesheet.
+	wp_enqueue_style( 'plyr-style', 'https://cdn.plyr.io/3.3.10/plyr.css', false );
 
-	 wp_enqueue_style( 'buddykit-style', BUDDYKIT_PUBLIC_URI . 'css/buddykit.css', false );
-	 wp_enqueue_style( 'magnific-popup', BUDDYKIT_PUBLIC_URI . 'css/vendor/magnific-popup/magnific-popup.css', false );
+	// Plyr
+	wp_enqueue_script( 'plyr', 'https://cdn.plyr.io/3.3.10/plyr.polyfilled.js',  array(), false );
 
-	wp_enqueue_script( 'wp-mediaelement' );
+	// Magnific Popup
 	wp_enqueue_script( 'magnific-popup', BUDDYKIT_PUBLIC_URI . 'js/vendor/magnific-popup/magnific-popup.js',  array( 'jquery', 'imagesloaded' ), false );
+
+	// Buddykit
 	wp_enqueue_script( 'buddykit-src', BUDDYKIT_PUBLIC_URI . 'js/buddykit.js', array( 'plupload-html5', 'backbone', 'underscore' ), false );
 	
 	wp_localize_script( 'buddykit-src', '__buddyKit', buddykit_config() );
