@@ -134,6 +134,7 @@ class BuddyKitFileAttachment {
 		$file['name'] = md5( time().$file['name'] ).'.'.$ext;
 		return $file;
 	}
+	
 	/**
 	 * Delete the file under a specific task.
 	 *

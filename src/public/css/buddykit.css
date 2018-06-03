@@ -161,14 +161,21 @@ li.buddykit-activity-media-gallery-item.type-video {
     background: linear-gradient(#ababab, #000);
     cursor: pointer;
 }
+.buddykit-activity-media-gallery.items-1 li.buddykit-activity-media-gallery-item.type-video {
+    background: none;
+    cursor: pointer;
+}
 
 .buddykit-media-video {
     cursor: pointer;
 }
+.plyr__menu__container ul li {
+    margin: 0;
+}
+.plyr button.plyr__control,
 .buddypress .buddypress-wrap .plyr button.plyr__control {
-    background: transparent;
-    color: #fff;
     border: 0 none;
+    box-shadow: none;
 }
 .buddypress .buddypress-wrap .plyr button.plyr__control:hover,
 .buddypress .buddypress-wrap .plyr button.plyr__control:focus {
@@ -218,7 +225,7 @@ li.buddykit-activity-media-gallery-item.type-video {
     border-style: solid;
     border-width: 7.5px 0px 7.5px 15px;
     border-color: #0000 #0000 #0000 rgba(255,255,255,0.75);
-    margin: 0 auto;
+    margin: 0 auto 0 5px;
     display: inline-block;
 }
 
@@ -230,14 +237,15 @@ li.buddykit-activity-media-gallery-item.type-video {
     border-color: #0000 #0000 #0000 #fff;
 }
 
-.buddykit-media-video-popup-wrap {
-    max-width: 700px;
+.buddykit-video-popup {
+    max-width: 840px;
     margin: 35px auto;
+    position: relative;
 }
 
 .mfp-close-btn-in .mfp-close {
-    color: #fff;
-    margin-right: 10%;
+    margin-right: -64px;
     border-radius: 50%;
     background: #fff;
+    margin-top: -64px;
 }

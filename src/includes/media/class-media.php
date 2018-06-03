@@ -110,14 +110,14 @@ function __buddykit_update_activity_kses_filter() {
 					 );
 
 	$bp_allowed_tags['video'] = array(
-						'id' => array(),
-						'width' => array(),
-						'height' => array(),
-						'class' => array(),
-						'src' => array(),
-						'controls' => array(),
-						'data-mejsoptions' => array(),
-					);
+			'id' => array(),
+			'width' => array(),
+			'height' => array(),
+			'class' => array(),
+			'src' => array(),
+			'controls' => array(),
+			'data-mejsoptions' => array(),
+		);
 	return $bp_allowed_tags;
 }
 

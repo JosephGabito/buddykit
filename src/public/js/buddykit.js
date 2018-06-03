@@ -313,10 +313,34 @@ jQuery(document).ready(function($){
 	  		enabled: true
 	  	}
 	});
+
+	$('body').on('click', '.buddykit-media-wrap', function(){
+
+		var videoHtml = $(this).children('p').html();
+			
+		$.magnificPopup.open({
+		  	items: {
+		    	src: '<div class="buddykit-video-popup"><div class="buddykit-media-video-popup-wrap">'+videoHtml+'</div></div>', // can be a HTML string, jQuery object, or CSS selector
+		    	type: 'inline'
+		  	},
+		  	callbacks: {
+		  		open: function(){
+		  			var player_options = {
+						controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', '', 'pip', 'airplay', 'fullscreen'],
+					};
+					var player = new Plyr( document.getElementById($(videoHtml).attr('id')) );
+		  		}
+		  	},
+		});
+		
+	});
+
 	$(document).ajaxComplete(function(event,request,settings){
 
 		if ( settings.data ) {
+			
 			var http_request_data = JSON.parse('{"' + decodeURI(settings.data.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
+
 			if ( typeof http_request_data === 'object') {
 				
 				var valid_actions = ['activity_filter', 'post_update'];
@@ -335,27 +359,6 @@ jQuery(document).ready(function($){
 
 					// Now we know that this is a BuddyPress activity object
 					if ( $.inArray( http_request_data.action , valid_actions) >= 0 ) {
-
-						$('body').on('click', '.buddykit-media-wrap', function(){
-							var videoHtml = $(this).children('p').html();
-								
-							$.magnificPopup.open({
-							  	items: {
-							    	src: '<div class="white-popup"><div class="buddykit-media-video-popup-wrap">'+videoHtml+'</div></div>', // can be a HTML string, jQuery object, or CSS selector
-							    	type: 'inline'
-							  	},
-							  	callbacks: {
-							  		open: function(){
-							  			var player_options = {
-											controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', '', 'pip', 'airplay', 'fullscreen'],
-										};
-										var player = new Plyr( document.getElementById($(videoHtml).attr('id')) );
-							  		}
-							  	},
-							});
-						});
-						
-
 						window.buddykitMagnificPopUpped = false;
 						$('body').on('mouseover', '.buddykit-activity-media-gallery', function(){
 							if ( ! window.buddykitMagnificPopUpped )  {
