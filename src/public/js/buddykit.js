@@ -2,7 +2,9 @@
  * Upload Collection
  */
 jQuery(document).ready(function($){
-
+	if ( 0 === parseInt(__buddyKit.current_user_id) ) {
+		return;
+	}
 	if ( typeof __buddyKit === 'undefined' ) {
 		return;
 	}
@@ -283,11 +285,16 @@ jQuery(document).ready(function($){
 	}); // End uploaded object.
 
 	uploader.init();
+	
+});
 
-	/**
-	 * Old good jQuery events
-	 */
+/**
+* Old good jQuery events
+*/
 
+jQuery(document).ready(function($){
+
+	
 	// auto focus textarea
 	$.fn.selectRange = function(start, end) {
 	    if(!end) end = start; 
@@ -332,7 +339,7 @@ jQuery(document).ready(function($){
 		  		}
 		  	},
 		});
-		
+
 	});
 
 	$(document).ajaxComplete(function(event,request,settings){
@@ -377,7 +384,4 @@ jQuery(document).ready(function($){
 			}
 		}
 	});
-	
-
-	
 });
