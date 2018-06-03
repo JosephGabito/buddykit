@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: BuddyKit
- * Description: Additional features for your BuddyPress site when defaults are not enough.
+ * Description: BuddyKit adds several features like Live Notifications and Media Activities to your BuddyPress powered websites.
  * Plugin URI: https://buddykit.io/
  * Author: Dunhakdis, Joseph G.
  * Author URI: https://dunhakdis.com/
- * Version: 0.1
+ * Version: 0.0.1
  * Text Domain: buddykit
  * License: GPLv3
  * Domain Path: /src/languages
