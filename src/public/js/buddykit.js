@@ -336,8 +336,21 @@ jQuery(document).ready(function($){
 					// Now we know that this is a BuddyPress activity object
 					if ( $.inArray( http_request_data.action , valid_actions) >= 0 ) {
 
+						$('body').on('click', '.buddykit-media-wrap', function(){
+							var videoHtml = $(this).html();
+								console.log( videoHtml);
+							$.magnificPopup.open({
+							  	items: {
+							    	src: '<div class="white-popup">'+videoHtml+'</div>', // can be a HTML string, jQuery object, or CSS selector
+							    	type: 'inline'
+							  }
+							});
+						});
 						setTimeout(function(){
+
 							return;
+
+							// ----
 							var player_options = {
 								controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', '', 'pip', 'airplay', 'fullscreen'],
 								ratio: '16:16'

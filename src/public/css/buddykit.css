@@ -189,6 +189,9 @@ input#aw-whats-new-submit[disabled=disabled] {
 .buddykit-media-wrap {
     position: relative;
 }
+.buddykit-media-wrap p {
+    margin: 0;
+}
 .buddykit-media-button-play-wrap {
    position: absolute;
     background: #ffffff80;
