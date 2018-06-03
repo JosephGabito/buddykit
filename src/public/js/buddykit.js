@@ -337,38 +337,23 @@ jQuery(document).ready(function($){
 					if ( $.inArray( http_request_data.action , valid_actions) >= 0 ) {
 
 						$('body').on('click', '.buddykit-media-wrap', function(){
-							var videoHtml = $(this).html();
-								console.log( videoHtml);
+							var videoHtml = $(this).children('p').html();
+								
 							$.magnificPopup.open({
 							  	items: {
-							    	src: '<div class="white-popup">'+videoHtml+'</div>', // can be a HTML string, jQuery object, or CSS selector
+							    	src: '<div class="white-popup"><div class="buddykit-media-video-popup-wrap">'+videoHtml+'</div></div>', // can be a HTML string, jQuery object, or CSS selector
 							    	type: 'inline'
-							  }
+							  	},
+							  	callbacks: {
+							  		open: function(){
+							  			var player_options = {
+											controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', '', 'pip', 'airplay', 'fullscreen'],
+										};
+										var player = new Plyr( document.getElementById($(videoHtml).attr('id')) );
+							  		}
+							  	},
 							});
 						});
-						setTimeout(function(){
-
-							return;
-
-							// ----
-							var player_options = {
-								controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', '', 'pip', 'airplay', 'fullscreen'],
-								ratio: '16:16'
-							};
-
-							const players = Array.from( document.querySelectorAll('.buddykit-media-video') ).map( p => new Plyr(p, player_options) );
-							$.each(players, function(index, player){
-								var current_player = player;
-								current_player.on('play', function(){
-									$('.plyr__controls', $(this)).css('opacity', 1);
-								});	
-								current_player.on('pause', function(){
-									$('.plyr__controls', $(this)).css('opacity', 0);
-								})
-							});
-							
-						
-						}, 500);
 						
 
 						window.buddykitMagnificPopUpped = false;

@@ -156,9 +156,13 @@ input#aw-whats-new-submit[disabled=disabled] {
  * Needs .buddypress .buddypress-wrap, some themes overwrite bp buttons through 
  * this selector so we need to overwrite them.
  */
-.buddykit-media-video {
+
+li.buddykit-activity-media-gallery-item.type-video {
     background: linear-gradient(#ababab, #000);
-    border: 2px solid #000;
+    cursor: pointer;
+}
+
+.buddykit-media-video {
     cursor: pointer;
 }
 .buddypress .buddypress-wrap .plyr button.plyr__control {
@@ -188,8 +192,10 @@ input#aw-whats-new-submit[disabled=disabled] {
 
 .buddykit-media-wrap {
     position: relative;
+    height: 100%;
 }
 .buddykit-media-wrap p {
+    height: 100%;
     margin: 0;
 }
 .buddykit-media-button-play-wrap {
@@ -222,4 +228,16 @@ input#aw-whats-new-submit[disabled=disabled] {
 }
 .buddykit-media-wrap:hover .buddykit-media-button-play {
     border-color: #0000 #0000 #0000 #fff;
+}
+
+.buddykit-media-video-popup-wrap {
+    max-width: 700px;
+    margin: 35px auto;
+}
+
+.mfp-close-btn-in .mfp-close {
+    color: #fff;
+    margin-right: 10%;
+    border-radius: 50%;
+    background: #fff;
 }

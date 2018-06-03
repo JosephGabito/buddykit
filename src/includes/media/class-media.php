@@ -110,6 +110,7 @@ function __buddykit_update_activity_kses_filter() {
 					 );
 
 	$bp_allowed_tags['video'] = array(
+						'id' => array(),
 						'width' => array(),
 						'height' => array(),
 						'class' => array(),
@@ -185,7 +186,7 @@ function buddykit_activity_append_media_content() {
 								$media_html .= '<div class="buddykit-media-button-play-wrap">';
 									$media_html .= '<div class="buddykit-media-button-play"></div>';
 								$media_html .= '</div>';
-								$media_html .= '<video src="'.esc_url($url).'" width="100%" height="100%" class="buddykit-media-video"></video>';
+								$media_html .= '<video id="buddykit-media-video'.esc_attr($result->id).'" src="'.esc_url($url).'" width="100%" height="100%" class="buddykit-media-video"></video>';
 							$media_html .= '</div>';
 						$media_html .= '</li>';
 					} else {
