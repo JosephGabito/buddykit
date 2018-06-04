@@ -100,16 +100,38 @@ function buddykit_settings_init() {
 		 			'class' => 'buddykit_field_max_image_size_row',
 		 			'default' => $config_default['buddykit_field_max_image_size'],
 		 			'description' => esc_html__('The allowed maximum size of the image in MB. 
-		 				Value must be an integer.', 'buddykit')
+		 				Value must be an integer.', 'buddykit') . '<br/>' . esc_html('Maximum value can be set up to ', 'buddykit')
+						. '<strong>' . ini_get( 'post_max_size') . '</strong>' .  
+						' (Post max size)'
 		 		]
 			);
 
 			/**
-			 * Maximum Video Size
+			 * Max Video Size
+			 */
+			add_settings_field(
+				'buddykit_field_max_video_size', // The field ID
+			    'Max Video Size', // The label
+			    'buddykit_field_size_view', // Callback view
+			    'buddykit-settings.php', //Under what settings?
+			    'buddykit_section_media', //Section,
+			   	[
+		 			'label_for' => 'buddykit_field_max_video_size',
+		 			'class' => 'buddykit_field_max_video_size_row',
+		 			'default' => $config_default['buddykit_field_max_video_size'],
+		 			'description' => esc_html__('The allowed maximum size of the video in MB. 
+		 				Value must be an integer.', 'buddykit') . '<br/>' . esc_html('Maximum value can be set up to ', 'buddykit')
+						. '<strong>' . ini_get( 'post_max_size') . '</strong>' .  
+						' (Post max size)'
+		 		]
+			);
+
+			/**
+			 * Maximum Number of Media 
 			 */
 			add_settings_field(
 			    'buddykit_field_max_image_number', // The field ID
-			    'Max Images Number', // The label
+			    'Max Media Number', // The label
 			    'buddykit_field_size_view', // Callback view
 			    'buddykit-settings.php', //Under what settings?
 			    'buddykit_section_media', //Section,
@@ -117,7 +139,7 @@ function buddykit_settings_init() {
 		 			'label_for' => 'buddykit_field_max_image_number',
 		 			'class' => 'buddykit_field_max_video_size_row',
 		 			'default' => $config_default['buddykit_field_max_image_number'],
-		 			'description' => esc_html__('Limits the maximum number of images per activity post.', 'buddykit')
+		 			'description' => esc_html__('Limits the maximum number of medias per activity post.', 'buddykit')
 		 		]
 			);
 
@@ -160,12 +182,44 @@ function buddykit_settings_sanitize_callback($params) {
 	if ( isset( $params['buddykit_field_max_image_size'] ) ) {
 		$max_image_size = filter_var( $params['buddykit_field_max_image_size'], FILTER_VALIDATE_INT, array(
 			'options' => array(
-					'default' => $config_default['buddykit_field_max_image_size'],
+					'min_range' => 1,
+					'max_range' => intval( ini_get('post_max_size') )
+				),
+		));
+		if ( ! $max_image_size ) {
+			$errors[] = array(
+					'id' => 'max_image_size_range_error',
+					'code' => 'max_image_size_range_error',
+					'message' => esc_html__('There was an error with your input for "Max Image Size". Reverting to default value.', 'buddykit'),
+					'type' => 'error'
+				);
+			$max_image_size = $config_default['buddykit_field_max_image_size'];
+		}
+	
+		$options['buddykit_field_max_image_size'] = sanitize_text_field( $max_image_size );
+	}
+
+	// Maximum size of videos.
+	if ( isset( $params['buddykit_field_max_video_size'] ) ) {
+
+		$max_video_size = filter_var( $params['buddykit_field_max_video_size'], FILTER_VALIDATE_INT, array(
+			'options' => array(
 					'min_range' => 1,
 					'max_range' => intval( ini_get('post_max_size') )
 				)
 		));
-		$options['buddykit_field_max_image_size'] = sanitize_text_field( $max_image_size );
+
+		if ( ! $max_video_size ) {
+			$errors[] = array(
+					'id' => 'max_video_size_range_error',
+					'code' => 'max_video_size_range_error',
+					'message' => esc_html__('There was an error with your input for "Max Video Size". Reverting to default value.', 'buddykit'),
+					'type' => 'error'
+				);
+			$max_video_size = $config_default['buddykit_field_max_video_size'];
+		}
+
+		$options['buddykit_field_max_video_size'] = sanitize_text_field( $max_video_size );
 	}
 
 	// Maximum number of images.
@@ -175,7 +229,7 @@ function buddykit_settings_sanitize_callback($params) {
 			'options' => array(
 					'default' => $config_default['buddykit_field_max_image_number'],
 					'min_range' => 1,
-					'max_range' => intval( ini_get('post_max_size') )
+					'max_range' => apply_filters('buddykit_field_max_image_number_max_range', 125)
 				)
 		));
 		$options['buddykit_field_max_image_number'] = sanitize_text_field( $max_image_number );
@@ -228,13 +282,11 @@ function buddykit_field_size_view($args) {
 	$option = get_option('buddykit_settings'); 
 	?>
 		<input id="<?php echo esc_attr( $args['label_for'] ); ?>" 
-		type="text" maxlength="<?php echo strlen(ini_get('post_max_size')) - 1; ?>" name="buddykit_settings[<?php echo esc_attr( $args['label_for'] ); ?>]" 
+		type="text" size="3" maxlength="<?php echo strlen(ini_get('post_max_size')) - 1; ?>" name="buddykit_settings[<?php echo esc_attr( $args['label_for'] ); ?>]" 
 		value="<?php echo !empty($option[$args['label_for']]) ? $option[$args['label_for']]: $args['default']; ?>" 
 		/>
 		<p class="description">
-			<?php echo $args['description']; ?><br/>
-			<?php esc_html_e('Maximum value can be set up to ', 'buddykit'); ?>
-			<?php echo ini_get('post_max_size'); ?> (Post Max Size)
+			<?php echo $args['description']; ?>
 		</p>
 	<?php
 }
