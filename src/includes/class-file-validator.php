@@ -21,7 +21,7 @@ if ( ! class_exists( 'BuddyKitFileValidator' ) ) {
             $this->error_messages = array(
                     'invalid_parameters' => esc_attr('Invalid parameters', 'buddykit'),
                     'no_file_sent' => esc_attr('No file snet', 'buddykit'),
-                    'exceeded_filesize_limit' => esc_attr('Exceeded filesize limit', 'buddykit'),
+                    'exceeded_filesize_limit' => esc_attr('Exceeded size limit for media type', 'buddykit'),
                     'unknown_error' => esc_attr('Exceeded filesize limit', 'buddykit'),
                     'invalid_file_format' => esc_attr('Invalid file format', 'buddykit'),
                 );
