@@ -26,6 +26,7 @@ if ( ! defined( 'FS_CHMOD_DIR' ) ) {
 function buddykit_config_settings_default() {
 	return array(
 			'buddykit_field_max_image_size' => 5,
+			'buddykit_field_max_video_size' => 5,
 			'buddykit_field_max_image_number' => 9,
 			'buddykit_field_upload_button_label' => __( 'Upload Photos', 'buddykit' ),
 		);
