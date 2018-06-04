@@ -6,8 +6,8 @@
  * @since  1.0
  */
 jQuery(document).ready(function($){
-    console.log(__buddyKit.config.options);
-    if ( 0 === __buddyKit.config.options.buddykit_rtn_pusher_key.length ) {
+
+    if ( ! __buddyKit.config.options.buddykit_rtn_pusher_key ) {
         return;
     }
 
