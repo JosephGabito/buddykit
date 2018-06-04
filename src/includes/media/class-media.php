@@ -468,13 +468,23 @@ function buddykit_activity_route_endpoint() {
 		);
 
 	$config = buddykit_config();
-	$max_file_size = absint( $config['config']['max_upload_size'] ) * 1000000;
 
-	$fv->set_maxsize( $max_file_size ); // 5MB
+	$max_image_size = absint( $config['config']['options']['buddykit_field_max_image_size'] );
+	$max_video_size = absint( $config['config']['options']['buddykit_field_max_video_size'] );
+
+	// Set the maxsize for image.
+	$max_file_size = $max_image_size;
+	// Set the max file size to video settings if the uplpoaded fie is video.
+	if ( false !== strpos( 'video/mp4', $_FILES['file']['type'] ) ) {
+		$max_file_size = $max_video_size;
+	}
+
+	$fv->set_maxsize( $max_file_size ); 
+
 	$fv->set_allowed_extension( $allowed_extensions );
 
 	$validated = $fv->validate( $file );
-
+	
 	if ( ! is_bool( $validated ) && true !== $validated ) {
 		return new WP_REST_Response(array(
 				'status' => 406,
