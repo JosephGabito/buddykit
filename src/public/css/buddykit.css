@@ -242,10 +242,3 @@ li.buddykit-activity-media-gallery-item.type-video {
     margin: 35px auto;
     position: relative;
 }
-
-.mfp-close-btn-in .mfp-close {
-    margin-right: -64px;
-    border-radius: 50%;
-    background: #fff;
-    margin-top: -64px;
-}
