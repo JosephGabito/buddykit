@@ -14,11 +14,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	return;
 }
 
-// @see https://codex.wordpress.org/Editing_wp-config.php
-if ( ! defined( 'FS_CHMOD_DIR' ) ) {
-	define( 'FS_CHMOD_DIR', ( 0755 & ~ umask() ) );
-}
-
 /**
  * Set default values for our media.
  * @return array The default values.
