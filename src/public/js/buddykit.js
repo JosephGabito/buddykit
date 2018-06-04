@@ -191,13 +191,31 @@ jQuery(document).ready(function($){
 			    	{ title: "Video files", extensions: "mp4" }
 			  	]
 			},
-		max_file_size: __buddyKit.config.max_upload_size,
+		
 		unique_names: true,
 		headers: {
 			'X-WP-Nonce': __buddyKit.nonce
 		},
 		init: {
-			PostInit: function() {},
+			PostInit: function() {
+				console.log('shot');
+			},
+			FileFiltered: function(up, file) {
+				
+				var max_img_size = parseInt(__buddyKit.config.options.buddykit_field_max_image_size) * 1000000;
+				var max_vid_size = parseInt(__buddyKit.config.options.buddykit_field_max_video_size) * 1000000;
+
+				var size_collection = [max_vid_size,max_img_size];
+
+					size_collection.sort(function (a,b) {
+				   		 return a - b;
+					});
+
+				this.setOption('max_file_size', size_collection[size_collection.length-1] );
+				
+				return;
+
+			},
 			FilesAdded: function(up, files) {
 				$('#buddykit-filelist-wrap').show();
 				
