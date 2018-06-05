@@ -242,3 +242,22 @@ li.buddykit-activity-media-gallery-item.type-video {
     margin: 35px auto;
     position: relative;
 }
+
+/**
+ * Profile Tabs Content
+ */
+ul#buddykit-profile-tab-list-photos {
+    padding:0;
+    margin:0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+ul#buddykit-profile-tab-list-photos li {
+    flex-basis: 25%;
+    flex-grow: 1;
+    padding: 5px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
