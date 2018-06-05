@@ -312,7 +312,25 @@ jQuery(document).ready(function($){
 
 jQuery(document).ready(function($){
 
-	
+	// Delete
+	$('body').on('click','.buddykit-profile-tabs-media-delete', function(e){
+		e.preventDefault();
+		var element = $(this);
+		$.ajax({
+			url: __buddyKit.rest_upload_uri + 'delete/' + $(this).attr('data-file-id'),
+			headers: {
+				'X-WP-Nonce': __buddyKit.nonce,
+			},
+			method: 'DELETE',
+			success: function(response) {
+				if ( response.status ) {
+					if ( 200 == response.status ) {
+						element.parent().remove();
+					}
+				}	
+			}
+		});
+	});
 	// auto focus textarea
 	$.fn.selectRange = function(start, end) {
 	    if(!end) end = start; 
