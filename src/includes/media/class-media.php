@@ -26,6 +26,36 @@ add_filter( 'groups_activity_new_update_content', '__buddykit_activity_append_me
 // We need to register REST API End Point.
 add_filter( 'bp_activity_allowed_tags', '__buddykit_update_activity_kses_filter', 10 );
 
+// Update the files activity id after saving.
+add_action( 'bp_activity_after_save', 'buddykit_update_files_activity_id');
+
+/**
+ * Updates the files activity id after saving.
+ * @param  array $bp_activity The returned argument from bp activity savings.
+ * @return void
+ */
+function buddykit_update_files_activity_id( $bp_activity ){
+
+	global $wpdb;
+	if ( WP_DEBUG ) {
+		$wpdb->show_errors();
+	}
+	$find_buddykit_attachments = preg_match_all('/< *li[^>]*data-file-id *= *["\']?([^"\']*)/i', $bp_activity->content, $matches);
+	if ( ! empty ( $matches[1] ) ) {
+		$media_list = implode( ',', $matches[1] );
+		if ( ! empty ( $media_list ) ) {
+			// Update buddykit user file
+			$stmt = "UPDATE {$wpdb->prefix}buddykit_user_files SET activity_id = %d WHERE id IN (".esc_sql($media_list).")";
+			$query = $wpdb->prepare( $stmt, $bp_activity->id );
+			if ( !$wpdb->query( $query ) ) {
+				if ( WP_DEBUG ) {
+					$wpdb->print_error();
+				}
+			}
+		}
+	}
+	
+}
 // Register our rest api endpoint.
 add_action( 'rest_api_init', function () {
 
@@ -33,6 +63,17 @@ add_action( 'rest_api_init', function () {
 	register_rest_route( 'buddykit/v1', '/upload', array(
 		'methods' => 'POST',
 		'callback' => 'buddykit_activity_route_endpoint',
+	) );
+
+	// Delete Uploaded Media.
+	register_rest_route( 'buddykit/v1', '/delete/(?P<id>\d+)', array(
+		'methods' => 'DELETE',
+		'callback' => 'buddykit_activity_route_endpoint_delete',
+		'args' => array(
+				'id' => array(
+					'validate_callback' => 'buddykit_is_verified_owner_validate',
+				),
+			),
 	) );
 
 	// Temporary media list.
@@ -64,6 +105,52 @@ add_action( 'rest_api_init', function () {
 	 ) );
 });
 
+
+/**
+ * Callback function to delete uploaded media file.
+ * @param  mixed $http_request The callback argument used in WP REST Api.
+ * @return mixed Boolean (false) on fail. Other wise WP_Rest_Response object.
+ */
+function buddykit_activity_route_endpoint_delete( $http_request ) {
+	
+	global $wpdb;
+
+	$params = $http_request->get_params();
+	$id = $params['id'];
+
+	if ( ! is_user_logged_in() ) {
+		return false;
+	}
+	$user_id = get_current_user_id();
+	// Get the file record
+	$file_record = $wpdb->get_row( $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files 
+		WHERE id = %d AND user_id = %d", $id, $user_id), OBJECT );
+	// Delete the record in database.
+	if ( $wpdb->delete( $wpdb->prefix . 'buddykit_user_files', 
+		array( 'id' => $id, 'user_id' => $user_id ), array( '%d', '%d' ) ) ) 
+			{
+				$actual_file_path = buddykit_get_user_upload_dir() . $file_record->name;
+				$__exp_filename = explode('.', $file_record->name);
+				$actual_file_path_thumb = buddykit_get_user_upload_dir() . $__exp_filename[0] . '-thumbnail.' . $__exp_filename[1];
+				
+				// Delete fill size image.
+				if ( file_exists( $actual_file_path ) ) {
+					wp_delete_file( $actual_file_path );
+				}
+				// Delete thumbnail.
+				if ( file_exists( $actual_file_path_thumb ) ) {
+					wp_delete_file( $actual_file_path_thumb );
+				}
+			}
+	
+	return new WP_REST_Response(
+		array(
+			'id' => absint($id),
+			'status' => 200,
+			'message' => 'delete_okay',
+		)
+	);
+}
 
 /**
  * Check if the current user is the owner of the file.
@@ -103,6 +190,7 @@ function __buddykit_update_activity_kses_filter() {
 					 );
 	$bp_allowed_tags['li'] = array(
 						'class' => array(),
+						'data-file-id' => array()
 					 );
 
 	$bp_allowed_tags['div'] = array(
@@ -179,9 +267,8 @@ function buddykit_activity_append_media_content() {
 				$thumbnail_url = BuddyKitFileAttachment::get_user_uploads_url( $result->user_id ) . $filename.'-thumbnail.'.$extension;
 				$allowed_video_extensions= array('mp4');
 				
-					
 					if ( in_array( $extension, $allowed_video_extensions ) ) {
-						$media_html .= '<li class="buddykit-activity-media-gallery-item type-video">';
+						$media_html .= '<li data-file-id="'.absint($result->id).'" class="buddykit-activity-media-gallery-item type-video">';
 							$media_html .= '<div class="buddykit-media-wrap">';
 								$media_html .= '<div class="buddykit-media-button-play-wrap">';
 									$media_html .= '<div class="buddykit-media-button-play"></div>';
@@ -190,14 +277,12 @@ function buddykit_activity_append_media_content() {
 							$media_html .= '</div>';
 						$media_html .= '</li>';
 					} else {
-						$media_html .= '<li class="buddykit-activity-media-gallery-item type-image">';
+						$media_html .= '<li data-file-id="'.absint($result->id).'" class="buddykit-activity-media-gallery-item type-image">';
 							$media_html .= '<a data-fancybox="'.esc_attr( $gallery_id ).'" title="'.esc_attr( $result->name ).'" href="'.esc_url( $url ).'">';
 								$media_html .= '<img src="'.esc_url( $thumbnail_url ).'" alt="'.esc_attr( $result->name ).'" />';
 							$media_html .= '</a>';
 						$media_html .= '</li>';
 					}
-					
-				
 
 			}
 
@@ -545,13 +630,13 @@ function buddykit_get_user_temporary_files_url( $file = '' ) {
 function buddykit_get_user_upload_dir( $is_temporary = false ) {
 	$dir = wp_upload_dir();
 
-	$url = trailingslashit( $dir['baseurl'] ) . sprintf( 'buddykit/%d/', get_current_user_id() );
+	$url = trailingslashit( $dir['basedir'] ) . sprintf( 'buddykit/%d/', get_current_user_id() );
 
 	if ( $is_temporary ) {
 		return trailingslashit( $url . 'tmp' );
 	}
 
-	return trailingslashit( $url . 'uploaded' );
+	return trailingslashit( $url . 'uploads' );
 }
 
 
@@ -653,6 +738,7 @@ function buddykit_get_user_activity_photos( $user_id ) {
 	if ( ! empty( $results ) ) {
 		foreach( $results as $photo ) {
 			$photos[] = array(
+				'image_id' => $photo->id,
 				'image_src_full' => buddykit_get_user_uploads_uri( $user_id, $photo->name ),
 				'image_src' => buddykit_get_user_uploads_thumbnail_uri( $user_id, $photo->name ),
 				'image_alt' => $photo->name,
