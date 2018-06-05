@@ -36,4 +36,6 @@ require_once BUDDYKIT_PATH . 'src/includes/media/admin-options/admin-options.php
 
 require_once BUDDYKIT_PATH . 'src/includes/media/class-media.php';
 
+require_once BUDDYKIT_PATH . 'src/includes/media/profile-tabs/profile-tabs.php';
+
 require_once BUDDYKIT_PATH . 'src/includes/real-time-notifications/real-time-notifications.php';
