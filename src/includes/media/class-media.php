@@ -628,3 +628,65 @@ function buddykit_html_templates() {
 }
 	return;
 }
+
+
+/**
+ * Returns all user photos uploading in activity
+ * @param  int $user_id The user id
+ * @return array The photos of user
+ */
+function buddykit_get_user_activity_photos( $user_id ) {
+	
+	global $wpdb;
+	
+	$photos = array();
+
+	$stmt = "SELECT id, user_id, name, type FROM {$wpdb->prefix}buddykit_user_files 
+			WHERE user_id = %d AND type IN('image/png', 'image/jpeg', 'image/jpg', 'image/gif')
+			ORDER BY id DESC
+			";
+
+	$query = $wpdb->prepare( $stmt, $user_id );
+
+	$results = $wpdb->get_results( $query, OBJECT );
+	
+	if ( ! empty( $results ) ) {
+		foreach( $results as $photo ) {
+			$photos[] = array(
+				'image_src_full' => buddykit_get_user_uploads_uri( $user_id, $photo->name ),
+				'image_src' => buddykit_get_user_uploads_thumbnail_uri( $user_id, $photo->name ),
+				'image_alt' => $photo->name,
+			);
+		}
+	}
+
+	return $photos;
+}
+
+/**
+ * Returns the 'thumbnail' upload url of the image file. Pass the name.
+ * @param  string $user_id  The user id.
+ * @param  string $filename The filename.
+ * @return string The url of the uploaded file.
+ */
+function buddykit_get_user_uploads_thumbnail_uri($user_id, $filename = '') {
+	
+	$wp_upload = wp_upload_dir();
+	$parts = explode('.', sanitize_file_name( $filename ));
+	return $base = $wp_upload['baseurl'] . '/buddykit/'.absint($user_id).'/uploads/' . $parts[0] . '-thumbnail.' . $parts[1];
+
+}
+
+/**
+ * Returns the upload url of the image file. Pass the name.
+ * @param  string $user_id  The user id.
+ * @param  string $filename The filename.
+ * @return string The url of the uploaded file.
+ */
+function buddykit_get_user_uploads_uri($user_id, $filename = '') {
+	
+	$wp_upload = wp_upload_dir();
+
+	return $base = $wp_upload['baseurl'] . '/buddykit/'.absint($user_id).'/uploads/' . sanitize_file_name( $filename );
+
+}
