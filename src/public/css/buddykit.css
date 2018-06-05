@@ -285,3 +285,19 @@ ul#buddykit-profile-tab-list-videos li.buddykit-profile-tab-list-videos-item vid
 .buddykit-profile-tab-list-videos-item-wrap {
     position: relative;
 }
+li.buddykit-profile-tab-list-photos-item  { position: relative; }
+li.buddykit-profile-tab-list-photos-item a.buddykit-profile-tabs-media-delete {
+    position: absolute;
+    right: 0;
+    background: #fff;
+    color: #444;
+    padding: 5px 10px;
+    font-weight: bold;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    display: none;
+}
+li.buddykit-profile-tab-list-photos-item:hover a.buddykit-profile-tabs-media-delete {
+    display: block;
+}
+
