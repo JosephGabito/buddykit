@@ -3,7 +3,7 @@ namespace BuddyKit\Media;
 
 class Setup_Profile_Tabs {
 
-	var $view_image_slug = 'media';
+	var $view_image_slug = 'media-files';
 	var $tab_parent = 'profile';
 
 	public function __construct() {
@@ -60,14 +60,53 @@ class Setup_Profile_Tabs {
 	public function setup_content_body() {
 		$current_tab = filter_input(INPUT_GET, 'show', FILTER_SANITIZE_STRING );
 		if ( 'videos' === $current_tab ) {
-			
+			$videos = buddykit_get_user_activity_videos( bp_displayed_user_id() );
+			if ( ! empty ( $videos ) ) { ?>
+				<div id="buddykit-media-count">
+					<p>
+						<span>
+							<?php $message = _n_noop('Found %d video', 'Found %d videos', 'buddykit' ); ?>
+							<?php printf( translate_nooped_plural( $message, absint(count($videos)), 'buddykit' ), number_format_i18n( absint(count($videos)) ) ); ?>
+						</span>
+					</p>
+				</div>
+				<ul id="buddykit-profile-tab-list-videos">
+				<?php 
+				foreach( $videos as $video ) { 
+					?>
+					<li class="buddykit-profile-tab-list-videos-item">
+						<div class="buddykit-profile-tab-list-videos-item-wrap buddykit-media-wrap">
+							<div class="buddykit-media-button-play-wrap">
+								<div class="buddykit-media-button-play"></div>
+							</div>
+							<p>
+							<video width="100%" height="150" id="player">
+						    	<source src="<?php echo esc_url( $video['video_src'] ); ?>" type="video/mp4">
+							</video>
+							</p>
+						</div>
+					</li>
+					<?php
+				}?>
+				</ul>
+			<?php }  else {
+				?>
+				<aside class="bp-feedback bp-messages bp-template-notice info">
+					<span class="bp-icon" aria-hidden="true"></span>
+					<p>
+						<?php esc_html_e('There are no videos to show', 'buddykit'); ?>
+					</p>
+				</aside>
+				<?php
+			}
 		} else {
 			$photos = buddykit_get_user_activity_photos( bp_displayed_user_id() );
 			if ( ! empty( $photos ) ) { ?>
 				<div id="buddykit-media-count">
-					<span>
-						<?php echo absint(count($photos)); ?>
-					</span>
+					<p>
+						<?php $message = _n_noop('Found %d photo', 'Found %d photos', 'buddykit' ); ?>
+						<?php printf( translate_nooped_plural( $message, absint(count($photos)), 'buddykit' ), number_format_i18n( absint(count($photos)) ) ); ?>
+					</p>
 				</div>
 				<ul id="buddykit-profile-tab-list-photos">
 					<?php foreach( $photos as $photo ) { ?>
