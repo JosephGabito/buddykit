@@ -339,6 +339,13 @@ jQuery(document).ready(function($){
 	  	}
 	});
 
+	$('.buddykit-profile-tabs-image-item').magnificPopup({
+		type: 'image',
+	  	gallery: {
+	  		enabled: true
+	  	}
+	});
+
 	$('body').on('click', '.buddykit-media-wrap', function(){
 
 		var videoHtml = $(this).children('p').html();
