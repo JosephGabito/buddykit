@@ -5,7 +5,7 @@
  * Plugin URI: https://buddykit.io/
  * Author: Dunhakdis, Joseph G.
  * Author URI: https://dunhakdis.com/
- * Version: 0.0.1
+ * Version: 0.0.2
  * Text Domain: buddykit
  * License: GPLv3
  * Domain Path: /src/languages
