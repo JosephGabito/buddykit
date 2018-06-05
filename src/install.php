@@ -31,7 +31,7 @@ function buddykit_update_db_check() {
 	return;
 }
 
-$buddykit_db_version = '0.0.4';
+$buddykit_db_version = '0.0.5';
 
 /**
  * Actually installs the tables needed.
@@ -54,6 +54,7 @@ function buddykit_install() {
 		$sql = "CREATE TABLE $table_name (
 			id 	mediumint(9) NOT NULL AUTO_INCREMENT,
 			user_id mediumint(9),
+			activity_id mediumint(9),
 			name tinytext NOT NULL,
 			type varchar(55) NOT NULL,
 			is_tmp smallint(1) NOT NULL,
