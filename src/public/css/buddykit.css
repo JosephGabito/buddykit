@@ -246,6 +246,21 @@ li.buddykit-activity-media-gallery-item.type-video {
 /**
  * Profile Tabs Content
  */
+ul#buddykit-profile-tabs-media-tab {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    margin-bottom: 20px;
+}
+ul#buddykit-profile-tabs-media-tab li {
+    padding: 0;
+    margin: 0 15px 0 0;
+    list-style: none;
+}
+ul#buddykit-profile-tabs-media-tab li.active a {
+    font-weight: bold;
+}
+ul#buddykit-profile-tab-list-videos,
 ul#buddykit-profile-tab-list-photos {
     padding:0;
     margin:0;
@@ -253,11 +268,20 @@ ul#buddykit-profile-tab-list-photos {
     flex-wrap: wrap;
     align-items: center;
 }
+ul#buddykit-profile-tab-list-videos li,
 ul#buddykit-profile-tab-list-photos li {
-    flex-basis: 25%;
+    flex-basis: 33.3%;
     flex-grow: 1;
     padding: 5px;
     list-style: none;
-    padding: 0;
     margin: 0;
+}
+ul#buddykit-profile-tab-list-videos li {
+    flex-basis: 50%;
+}
+ul#buddykit-profile-tab-list-videos li.buddykit-profile-tab-list-videos-item video {
+    background: #ddd;
+}
+.buddykit-profile-tab-list-videos-item-wrap {
+    position: relative;
 }
