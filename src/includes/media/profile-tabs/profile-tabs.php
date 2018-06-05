@@ -114,13 +114,16 @@ class Setup_Profile_Tabs {
 						<?php $image_src = $photo['image_src']; ?>
 						<?php $image_alt = $photo['image_alt']; ?>
 							<li class="buddykit-profile-tab-list-photos-item">
+								<a href="#" data-file-id="<?php echo esc_attr( absint( $photo['image_id']) ); ?>" class="buddykit-profile-tabs-media-delete">
+									<?php esc_html_e('Delete', 'buddykit'); ?>
+								</a>
 								<a href="<?php echo esc_url($image_src_full); ?>" class="buddykit-profile-tabs-image-item" 
 									title="<?php echo esc_attr($image_alt); ?>">
 									<img src="<?php echo esc_url($image_src); ?>" alt="<?php echo esc_attr($image_alt); ?>" />
 								</a>
 							</li>
 					<?php } ?>
-				</ul>;
+				</ul>
 			<?php
 			} else {
 				?>
