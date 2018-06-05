@@ -664,6 +664,32 @@ function buddykit_get_user_activity_photos( $user_id ) {
 }
 
 /**
+ * Get the specific user video.
+ * 
+ * @param  integer $user_id The id of the user.
+ * @return array The collection of videos made by user.
+ */
+function buddykit_get_user_activity_videos( $user_id ) {
+	global $wpdb;
+	$videos = array();
+	$stmt = "SELECT id, user_id, name, type FROM {$wpdb->prefix}buddykit_user_files 
+		WHERE user_id = %d AND type IN('video/mp4') ORDER BY id DESC
+		";
+	$query = $wpdb->prepare($stmt, $user_id );
+	$results = $wpdb->get_results($query, OBJECT);
+
+	if ( ! empty( $results ) ) {
+		foreach( $results as $video ) {
+			$videos[] = array(
+				'video_src' => buddykit_get_user_uploads_uri( $user_id, $video->name ),
+				'video_alt' => $video->name,
+			);
+		}
+	}
+	return $videos;
+}
+
+/**
  * Returns the 'thumbnail' upload url of the image file. Pass the name.
  * @param  string $user_id  The user id.
  * @param  string $filename The filename.
@@ -676,6 +702,7 @@ function buddykit_get_user_uploads_thumbnail_uri($user_id, $filename = '') {
 	return $base = $wp_upload['baseurl'] . '/buddykit/'.absint($user_id).'/uploads/' . $parts[0] . '-thumbnail.' . $parts[1];
 
 }
+
 
 /**
  * Returns the upload url of the image file. Pass the name.
