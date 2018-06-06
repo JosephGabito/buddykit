@@ -57,6 +57,7 @@ function buddykit_config() {
 		'file_list_container_id' => 'buddykit-filelist',
 		'current_user_id' => get_current_user_id(),
 		'i18' => array(
+				'confirm_media_delete' => __( 'Are you sure you want to delete this file?', 'buddykit' ),
 				'temporary_file_delete_item_message' => __( 'Are you sure you want to delete this?', 'buddykit' ),
 			),
 		'config' => array(
