@@ -20,9 +20,11 @@ add_action( 'wp_footer', 'buddykit_html_templates' );
 // Append media to activity.
 add_filter( 'bp_activity_after_save', 'buddykit_activity_meta_attach_media' );
 
-
 // Update the files activity id after saving.
 add_action( 'bp_activity_after_save', 'buddykit_update_files_activity_id');
+
+// Add content to activity.
+add_action('bp_activity_entry_content', 'buddykit_add_media_to_activity_content');
 
 /**
  * Updates the files activity id after saving.
@@ -142,7 +144,7 @@ function buddykit_activity_route_endpoint_delete( $http_request ) {
 		$actual_file_path = buddykit_get_user_upload_dir( false, $file_record->user_id ) . $file_record->name;
 		$__exp_filename = explode('.', $file_record->name);
 		$actual_file_path_thumb = buddykit_get_user_upload_dir( false, $file_record->user_id ) . $__exp_filename[0] . '-thumbnail.' . $__exp_filename[1];
-		//@todo
+		
 		// Delete fill size image.
 		if ( file_exists( $actual_file_path ) ) {
 			wp_delete_file( $actual_file_path );
@@ -207,7 +209,6 @@ function buddykit_is_verified_owner_and_is_admin_validate( $file_id ) {
 /**
  * Appends the media to the content of the activity.
  * @return string The activity html.
- * @todo
  */
 function buddykit_activity_meta_attach_media( $activity ) {
 
@@ -753,10 +754,14 @@ function buddykit_get_user_activity_videos( $user_id ) {
 	return $videos;
 }
 
+/**
+ * Adds the media files to activity content
+ * @return void
+ */
+function buddykit_add_media_to_activity_content() {
 
-//@todo
-add_action('bp_activity_entry_content', function(){
 	$media_files = bp_activity_get_meta( bp_get_activity_id(), 'buddykit_media_files' );
+
 	if ( ! empty( $media_files ) ) {
 
 		if ( ! class_exists( 'BuddyKitFileAttachment' ) ) {
@@ -805,7 +810,8 @@ add_action('bp_activity_entry_content', function(){
 			</ul>
 		<?php
 	}
-});
+	return;
+}
 
 function buddykit_rebuild_activity_media( $activity_id ) {
 	
