@@ -197,9 +197,7 @@ jQuery(document).ready(function($){
 			'X-WP-Nonce': __buddyKit.nonce
 		},
 		init: {
-			PostInit: function() {
-				console.log('shot');
-			},
+			PostInit: function() {},
 			FileFiltered: function(up, file) {
 				
 				var max_img_size = parseInt(__buddyKit.config.options.buddykit_field_max_image_size) * 1000000;
@@ -315,6 +313,10 @@ jQuery(document).ready(function($){
 	// Delete
 	$('body').on('click','.buddykit-profile-tabs-media-delete', function(e){
 		e.preventDefault();
+		// Confirm deletion.
+		if ( !confirm( __buddyKit.i18.confirm_media_delete ) ) {
+			return;
+		}
 		var element = $(this);
 		$.ajax({
 			url: __buddyKit.rest_upload_uri + 'delete/' + $(this).attr('data-file-id'),
@@ -327,7 +329,7 @@ jQuery(document).ready(function($){
 					if ( 200 == response.status ) {
 						element.parent().remove();
 					}
-				}	
+				}
 			}
 		});
 	});
@@ -366,8 +368,8 @@ jQuery(document).ready(function($){
 
 	$('body').on('click', '.buddykit-media-wrap', function(){
 
-		var videoHtml = $(this).children('p').html();
-			
+		var videoHtml = $(this).find('div.buddykit-video-inner-wrap').html();
+			console.log($(this).find('div.buddykit-video-inner-wrap'));
 		$.magnificPopup.open({
 		  	items: {
 		    	src: '<div class="buddykit-video-popup"><div class="buddykit-media-video-popup-wrap">'+videoHtml+'</div></div>', // can be a HTML string, jQuery object, or CSS selector
