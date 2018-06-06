@@ -18,13 +18,8 @@ add_action( 'wp_enqueue_scripts', 'buddykit_register_scripts' );
 add_action( 'wp_footer', 'buddykit_html_templates' );
 
 // Append media to activity.
-add_filter( 'bp_activity_new_update_content', '__buddykit_activity_append_media_content' );
+add_filter( 'bp_activity_after_save', 'buddykit_activity_meta_attach_media' );
 
-// Append media to groups activity.
-add_filter( 'groups_activity_new_update_content', '__buddykit_activity_append_media_content' );
-
-// We need to register REST API End Point.
-add_filter( 'bp_activity_allowed_tags', '__buddykit_update_activity_kses_filter', 10 );
 
 // Update the files activity id after saving.
 add_action( 'bp_activity_after_save', 'buddykit_update_files_activity_id');
@@ -132,7 +127,7 @@ function buddykit_activity_route_endpoint_delete( $http_request ) {
 				$actual_file_path = buddykit_get_user_upload_dir() . $file_record->name;
 				$__exp_filename = explode('.', $file_record->name);
 				$actual_file_path_thumb = buddykit_get_user_upload_dir() . $__exp_filename[0] . '-thumbnail.' . $__exp_filename[1];
-				
+
 				// Delete fill size image.
 				if ( file_exists( $actual_file_path ) ) {
 					wp_delete_file( $actual_file_path );
@@ -142,7 +137,13 @@ function buddykit_activity_route_endpoint_delete( $http_request ) {
 					wp_delete_file( $actual_file_path_thumb );
 				}
 			}
-	
+	// Update bp activity meta
+	$activity_id = $file_record->activity_id;
+	$stmt = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files WHERE activity_id = %d", absint( $activity_id ));
+
+	$new_activity_meta_files = $wpdb->get_results( $stmt, ARRAY_A  );
+
+	bp_activity_update_meta( $activity_id, 'buddykit_media_files', $new_activity_meta_files);
 	return new WP_REST_Response(
 		array(
 			'id' => absint($id),
@@ -176,62 +177,16 @@ function buddykit_is_verified_owner_validate( $file_id ) {
 }
 
 /**
- * Callback function to allow specific markup in activity stream.
- * @return array The collection of allowed markups.
- */
-function __buddykit_update_activity_kses_filter() {
-
-	$bp_allowed_tags = bp_get_allowedtags();
-
-	$bp_allowed_tags['a']['data-fancybox'] = array();
-
-	$bp_allowed_tags['ul'] = array(
-						'class' => array(),
-					 );
-	$bp_allowed_tags['li'] = array(
-						'class' => array(),
-						'data-file-id' => array()
-					 );
-
-	$bp_allowed_tags['div'] = array(
-						'class' => array(),
-					 );
-
-	$bp_allowed_tags['video'] = array(
-			'id' => array(),
-			'width' => array(),
-			'height' => array(),
-			'class' => array(),
-			'src' => array(),
-			'controls' => array(),
-			'data-mejsoptions' => array(),
-		);
-	return $bp_allowed_tags;
-}
-
-
-/**
- * Replaces http:// with // to support SSL.
- * @param  string $activity_content The content of the activity.
- * @return string The replaced string.
- */
-function __buddykit_activity_append_media_content( $activity_content ) {
-	$activity_content .= str_replace( 'http://','//',buddykit_activity_append_media_content() );
-	return $activity_content;
-}
-
-/**
  * Appends the media to the content of the activity.
  * @return string The activity html.
+ * @todo
  */
-function buddykit_activity_append_media_content() {
+function buddykit_activity_meta_attach_media( $activity ) {
 
 	global $wpdb;
 
-	$media_html = '';
-
 	$user_id = get_current_user_id();
-
+	$activity_meta_updated = false;
 	$stmt = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files
             WHERE user_id = %d AND is_tmp = %d",
 		$user_id, 1
@@ -246,63 +201,48 @@ function buddykit_activity_append_media_content() {
 		$flushed = buddykit_flush_user_tmp_files( $user_id );
 
 		if ( $flushed ) {
+
 			if ( ! class_exists( 'BuddyKitFileAttachment' ) ) {
 				require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';
-				;
 			}
-
-			// Start constructing activity template if files were successfully flushed.
-			$gallery_id = 'buddykit-activity-gallery-'.uniqid();
-
-			// Start template.
-			$media_html .= '<ul class="buddykit-activity-media-gallery items-'.absint( count( $results ) ).'">';
 
 			foreach ( $results as $result ) {
 
-				$url = BuddyKitFileAttachment::get_user_uploads_url( $result->user_id ) . $result->name;
-
+				$url = BuddyKitFileAttachment::get_user_uploads_url( $result->user_id ) . $result->name; 
 				$extension = pathinfo( wp_parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION );
 				$filename  = pathinfo( wp_parse_url( $url, PHP_URL_PATH ), PATHINFO_FILENAME );
-
-				$thumbnail_url = BuddyKitFileAttachment::get_user_uploads_url( $result->user_id ) . $filename.'-thumbnail.'.$extension;
-				$allowed_video_extensions= array('mp4');
-				
-					if ( in_array( $extension, $allowed_video_extensions ) ) {
-						$media_html .= '<li data-file-id="'.absint($result->id).'" class="buddykit-activity-media-gallery-item type-video">';
-							$media_html .= '<div class="buddykit-media-wrap">';
-								$media_html .= '<div class="buddykit-media-button-play-wrap">';
-									$media_html .= '<div class="buddykit-media-button-play"></div>';
-								$media_html .= '</div>';
-								$media_html .= '<video id="buddykit-media-video'.esc_attr($result->id).'" src="'.esc_url($url).'" width="100%" height="100%" class="buddykit-media-video"></video>';
-							$media_html .= '</div>';
-						$media_html .= '</li>';
-					} else {
-						$media_html .= '<li data-file-id="'.absint($result->id).'" class="buddykit-activity-media-gallery-item type-image">';
-							$media_html .= '<a data-fancybox="'.esc_attr( $gallery_id ).'" title="'.esc_attr( $result->name ).'" href="'.esc_url( $url ).'">';
-								$media_html .= '<img src="'.esc_url( $thumbnail_url ).'" alt="'.esc_attr( $result->name ).'" />';
-							$media_html .= '</a>';
-						$media_html .= '</li>';
-					}
+			
+				$activity_media_meta[] = array(
+					'id' => $result->id,
+					'name' => $result->name,
+					'thumbnail' => $filename.'-thumbnail.'.$extension
+				);
 
 			}
 
-			$media_html .= '</ul>';
-			// End template.
-		}
-	}
+			$activity_meta_updated = bp_activity_update_meta($activity->id, 'buddykit_media_files', $activity_media_meta);
+		} // End if ( $flushed ).
 
-	if ( ! empty( $media_html ) ) {
+	} // End if ( ! empty( $results ) ).
+
+	if ( $activity_meta_updated ) {
 		// Update the record.
 		$updated = $wpdb->update(
 			$wpdb->prefix . 'buddykit_user_files',
-			array( 'is_tmp' => '0' ),
-			array( 'user_id' => $user_id ),
-			array( '%d' ),
-			array( '%d' )
+			array( 
+					'is_tmp' => '0',
+					'activity_id' => absint( $activity->id )
+				),
+			array( 
+					'user_id' => $user_id,
+					'is_tmp' => '1'
+				),
+			array( '%d' ), //Where Datatype.
+			array( '%d' ) //Activity_id.
 		);
 	}
 
-	return $media_html;
+	return $activity_meta_updated;
 
 }
 
@@ -767,12 +707,75 @@ function buddykit_get_user_activity_videos( $user_id ) {
 	if ( ! empty( $results ) ) {
 		foreach( $results as $video ) {
 			$videos[] = array(
+				'video_id' => $video->id,
 				'video_src' => buddykit_get_user_uploads_uri( $user_id, $video->name ),
 				'video_alt' => $video->name,
 			);
 		}
 	}
 	return $videos;
+}
+
+
+//@todo
+add_action('bp_activity_entry_content', function(){
+	$media_files = bp_activity_get_meta( bp_get_activity_id(), 'buddykit_media_files' );
+	if ( ! empty( $media_files ) ) {
+
+		if ( ! class_exists( 'BuddyKitFileAttachment' ) ) {
+				require_once BUDDYKIT_PATH . 'src/includes/media/class-file-attachment.php';
+			}
+			$gallery_id = 'buddykit-activity-gallery-'.uniqid();?>
+			<ul class="buddykit-activity-media-gallery items-<?php echo absint( count( $media_files ) ); ?>">
+				
+				<?php foreach( $media_files as $file ) { ?>
+					
+					<?php $file_name = $file['name']; ?>
+					<?php $file_id = $file['id']; ?>
+					
+					<?php $url = BuddyKitFileAttachment::get_user_uploads_url( bp_get_activity_user_id() ) . $file_name; ?>
+					
+					<?php $extension = pathinfo( wp_parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION ); ?>
+					<?php $filename_from_path  = pathinfo( wp_parse_url( $url, PHP_URL_PATH ), PATHINFO_FILENAME ); ?>
+
+					<?php $thumbnail_url = BuddyKitFileAttachment::get_user_uploads_url( bp_get_activity_user_id() ) . $filename_from_path.'-thumbnail.'.$extension; ?>
+					<?php $allowed_video_extensions= array('mp4'); ?>
+
+					<?php if ( in_array( $extension, $allowed_video_extensions ) ) { ?>
+							<li data-file-id="<?php echo absint( $file_id );?>" class="buddykit-activity-media-gallery-item type-video">
+								<div class="buddykit-media-wrap">
+									<div class="buddykit-media-button-play-wrap">
+										<div class="buddykit-media-button-play"></div>
+									</div>
+									<div class="buddykit-video-inner-wrap">
+										<video id="buddykit-media-video-<?php echo esc_attr( $file_id ); ?>" 
+											src="<?php echo esc_url($url); ?>" width="100%" height="100%" class="buddykit-media-video">
+										</video>
+									</div>
+								</div>
+							</li>
+					<?php } else { ?>
+						<li data-file-id="<?php echo absint( $file_id );?>" class="buddykit-activity-media-gallery-item type-image">
+							<a data-fancybox="<?php echo esc_attr( $gallery_id ); ?>" title="<?php echo esc_attr( $file_name ); ?>" 
+								href="<?php echo esc_url( $url ); ?>">
+								<img src="<?php echo esc_url( $thumbnail_url ); ?>" alt="<?php echo esc_attr( $file_name ); ?>" />
+							</a>
+						</li>
+					<?php } ?>
+				
+				<?php } ?>
+
+			</ul>
+		<?php
+	}
+});
+
+function buddykit_rebuild_activity_media( $activity_id ) {
+	
+	global $wpdb;
+	
+	return;
+
 }
 
 /**
