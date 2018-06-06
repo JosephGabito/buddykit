@@ -265,7 +265,7 @@ ul#buddykit-profile-tab-list-photos {
     padding:0;
     margin:0;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap-reverse;
     align-items: center;
 }
 ul#buddykit-profile-tab-list-videos li,
@@ -280,13 +280,14 @@ ul#buddykit-profile-tab-list-videos li {
     flex-basis: 50%;
 }
 ul#buddykit-profile-tab-list-videos li.buddykit-profile-tab-list-videos-item video {
-    background: #ddd;
+    background: #212121;
 }
 .buddykit-profile-tab-list-videos-item-wrap {
     position: relative;
 }
-li.buddykit-profile-tab-list-photos-item  { position: relative; }
-li.buddykit-profile-tab-list-photos-item a.buddykit-profile-tabs-media-delete {
+li.buddykit-profile-tab-list-media-item  { position: relative; }
+
+li.buddykit-profile-tab-list-media-item a.buddykit-profile-tabs-media-delete {
     position: absolute;
     right: 0;
     background: #fff;
@@ -296,8 +297,9 @@ li.buddykit-profile-tab-list-photos-item a.buddykit-profile-tabs-media-delete {
     font-size: 12px;
     border: 1px solid #ddd;
     display: none;
+    z-index: 2000;
 }
-li.buddykit-profile-tab-list-photos-item:hover a.buddykit-profile-tabs-media-delete {
+li.buddykit-profile-tab-list-media-item:hover a.buddykit-profile-tabs-media-delete {
     display: block;
 }
 
