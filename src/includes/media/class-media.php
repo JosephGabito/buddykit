@@ -66,7 +66,7 @@ add_action( 'rest_api_init', function () {
 		'callback' => 'buddykit_activity_route_endpoint_delete',
 		'args' => array(
 				'id' => array(
-					'validate_callback' => 'buddykit_is_verified_owner_validate',
+					'validate_callback' => 'buddykit_is_verified_owner_and_is_admin_validate',
 				),
 			),
 	) );
@@ -117,26 +117,44 @@ function buddykit_activity_route_endpoint_delete( $http_request ) {
 		return false;
 	}
 	$user_id = get_current_user_id();
-	// Get the file record
-	$file_record = $wpdb->get_row( $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files 
-		WHERE id = %d AND user_id = %d", $id, $user_id), OBJECT );
-	// Delete the record in database.
-	if ( $wpdb->delete( $wpdb->prefix . 'buddykit_user_files', 
-		array( 'id' => $id, 'user_id' => $user_id ), array( '%d', '%d' ) ) ) 
-			{
-				$actual_file_path = buddykit_get_user_upload_dir() . $file_record->name;
-				$__exp_filename = explode('.', $file_record->name);
-				$actual_file_path_thumb = buddykit_get_user_upload_dir() . $__exp_filename[0] . '-thumbnail.' . $__exp_filename[1];
+	
+	$file_deleted = false;
 
-				// Delete fill size image.
-				if ( file_exists( $actual_file_path ) ) {
-					wp_delete_file( $actual_file_path );
-				}
-				// Delete thumbnail.
-				if ( file_exists( $actual_file_path_thumb ) ) {
-					wp_delete_file( $actual_file_path_thumb );
-				}
-			}
+	if ( current_user_can('manage_options') ) {
+		// Get the file record of the file with out user id. Administrator can delete anything.
+		$file_record = $wpdb->get_row( $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files 
+			WHERE id = %d", $id), OBJECT );
+		// Actually delete the file. . Administrator can delete anything.
+		$file_deleted = $wpdb->delete( $wpdb->prefix . 'buddykit_user_files', 
+			array( 'id' => $id ), array( '%d' ) );
+	} else {
+		// Get the file record
+		$file_record = $wpdb->get_row( $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files 
+			WHERE id = %d AND user_id = %d", $id, $user_id), OBJECT );
+		// Actually delete the file.
+		$file_deleted = $wpdb->delete( $wpdb->prefix . 'buddykit_user_files', 
+			array( 'id' => $id, 'user_id' => $user_id ), array( '%d', '%d' ) );
+	}
+	// Delete the record in database.
+	if ( $file_deleted )  
+	{
+		
+		$actual_file_path = buddykit_get_user_upload_dir( false, $file_record->user_id ) . $file_record->name;
+		$__exp_filename = explode('.', $file_record->name);
+		$actual_file_path_thumb = buddykit_get_user_upload_dir( false, $file_record->user_id ) . $__exp_filename[0] . '-thumbnail.' . $__exp_filename[1];
+		//@todo
+		// Delete fill size image.
+		if ( file_exists( $actual_file_path ) ) {
+			wp_delete_file( $actual_file_path );
+		} else {
+			echo 'File: ' . $actual_file_path . ' does not exists.';
+		}
+		// Delete thumbnail.
+		if ( file_exists( $actual_file_path_thumb ) ) {
+			wp_delete_file( $actual_file_path_thumb );
+		}
+	}
+
 	// Update bp activity meta
 	$activity_id = $file_record->activity_id;
 	$stmt = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}buddykit_user_files WHERE activity_id = %d", absint( $activity_id ));
@@ -169,11 +187,21 @@ function buddykit_is_verified_owner_validate( $file_id ) {
 
 	$result = $wpdb->get_row( $stmt, OBJECT ); // db call ok.
 
+	// Return
 	if ( ! empty( $result ) and is_object( $result ) ) {
 		return true;
 	}
 
 	return false;
+}
+
+function buddykit_is_verified_owner_and_is_admin_validate( $file_id ) {
+	
+	if ( current_user_can('manage_options') ) {
+		return true;
+	}
+
+	return buddykit_is_verified_owner_validate( $file_id );
 }
 
 /**
@@ -567,10 +595,19 @@ function buddykit_get_user_temporary_files_url( $file = '' ) {
  *
  * @return string The current user upload directory.
  */
-function buddykit_get_user_upload_dir( $is_temporary = false ) {
+function buddykit_get_user_upload_dir( $is_temporary = false, $user_id = 0 ) {
+
 	$dir = wp_upload_dir();
 
-	$url = trailingslashit( $dir['basedir'] ) . sprintf( 'buddykit/%d/', get_current_user_id() );
+	if ( $user_id <= 0 )  {
+		$user_id = get_current_user_id();
+	}
+	
+	if ( empty ( $user_id ) ) {
+		return false;
+	}
+
+	$url = trailingslashit( $dir['basedir'] ) . sprintf( 'buddykit/%d/', $user_id );
 
 	if ( $is_temporary ) {
 		return trailingslashit( $url . 'tmp' );
