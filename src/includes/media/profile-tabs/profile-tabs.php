@@ -74,16 +74,19 @@ class Setup_Profile_Tabs {
 				<?php 
 				foreach( $videos as $video ) { 
 					?>
-					<li class="buddykit-profile-tab-list-videos-item">
+					<li class="buddykit-profile-tab-list-videos-item buddykit-profile-tab-list-media-item">
+						<a href="#" data-file-id="<?php echo esc_attr( absint( $video['video_id']) ); ?>" class="buddykit-profile-tabs-media-delete">
+							<?php esc_html_e('Delete', 'buddykit'); ?>
+						</a>
 						<div class="buddykit-profile-tab-list-videos-item-wrap buddykit-media-wrap">
 							<div class="buddykit-media-button-play-wrap">
 								<div class="buddykit-media-button-play"></div>
 							</div>
-							<p>
-							<video width="100%" height="150" id="player">
-						    	<source src="<?php echo esc_url( $video['video_src'] ); ?>" type="video/mp4">
-							</video>
-							</p>
+							<div class="buddykit-video-inner-wrap">
+								<video width="100%" height="" id="player">
+							    	<source src="<?php echo esc_url( $video['video_src'] ); ?>" type="video/mp4">
+								</video>
+							</div>
 						</div>
 					</li>
 					<?php
@@ -113,7 +116,7 @@ class Setup_Profile_Tabs {
 						<?php $image_src_full = $photo['image_src_full']; ?>
 						<?php $image_src = $photo['image_src']; ?>
 						<?php $image_alt = $photo['image_alt']; ?>
-							<li class="buddykit-profile-tab-list-photos-item">
+							<li class="buddykit-profile-tab-list-photos-item buddykit-profile-tab-list-media-item">
 								<a href="#" data-file-id="<?php echo esc_attr( absint( $photo['image_id']) ); ?>" class="buddykit-profile-tabs-media-delete">
 									<?php esc_html_e('Delete', 'buddykit'); ?>
 								</a>
