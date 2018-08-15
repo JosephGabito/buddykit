@@ -72,7 +72,19 @@ class OptionKit {
 				$section['callback'],
 				$section['page']
 			);
+
 		}
+
+		add_settings_field(
+			'myprefix_setting-id',
+			'This is the setting title',
+			function(){
+				echo '<input type="text" /><p class="description">Enter cat mode!</p>';
+			},
+			'my-options',
+			'pusher_credits',
+			array( 'label_for' => 'myprefix_setting-id' )
+		);
 		
 	}
 
@@ -125,7 +137,17 @@ class OptionKit {
 
 	    ?>
 	    <div class="wrap">
-	    	
+	    	<?php
+	    	// check if the user have submitted the settings
+			// wordpress will add the "settings-updated" $_GET parameter to the url
+			if ( isset( $_GET['settings-updated'] ) ) {
+				// add settings saved message with the class of "updated"
+				add_settings_error( 'settings_message', 'wporg_message', __( 'Settings Saved', 'wporg' ), 'updated' );
+			}
+			 
+			// show error/update messages
+			settings_errors( 'settings_message' );
+	    	?>
 	    	<h1 class="wp-heading-inline">
 	    		<?php echo wp_kses_post( $this->getPageTitle() ); ?>
 	    	</h1>
@@ -178,14 +200,9 @@ class OptionKit {
 	}
 
 	protected function getPageTitle() {
-		$current_page = $_GET['page'];
-
-		foreach ( $this->submenus as $submenu ) {
-			if ( $submenu['menu_slug'] === $current_page ) {
-				return apply_filters('optionkit_content_title', $submenu['page_title'] );
-			}
-		}
-		return apply_filters('optionkit_content_title', $this->title );
+		
+		return get_admin_page_title();
+		
 	}
 
 }

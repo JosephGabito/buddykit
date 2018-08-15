@@ -8,8 +8,7 @@ $settings = new OptionKit(
 
 // Creates a top level menu in WordPress.
 $settings->menu( array(
-	'page_title' => 'Cat Options',
-	'menu_title' => 'Cat Options',
+	'menu_title' => 'BuddyKit',
 	'menu_slug' => 'cat-options',
 	'icon_url' => 'http://localhost/thrive/wp-content/uploads/2018/08/if_cat_285654.png'
 ));
@@ -17,8 +16,7 @@ $settings->menu( array(
 // Creates a submenu inside our newly created top level menu.
 $settings->submenu( array(
 	'parent_slug' => $settings->menu['menu_slug'],
-	'page_title' => 'Cat Character',
-	'menu_title' => 'Cat Character',
+	'menu_title' => 'Live Notifications',
 	'menu_slug' => 'my-options'
 ));
 
@@ -41,19 +39,21 @@ $settings->addSection(array(
 ));
 
 $settings->addSection(array(
-	'id' => 'eg_setting_se2asdction',
-	'label' => 'reading',
+	'id' => 'pusher_credits',
+	'label' => 'Pusher Credits',
 	'page' => 'my-options'
 ));
 
 $settings->addSection(array(
-	'id' => 'eg_settings_se2asdction',
-	'label' => 'readinsdg',
+	'id' => 'pusher_settings',
+	'label' => 'Pusher Settings',
 	'page' => 'my-options'
 ));
 
-//$settings->addField();
+
+
 $unique_option_group = 'asdadsd';
+
 $settings->initialize( $unique_option_group );
 
 //----------//----------//----------//----------//----------//----------//----------//----------//----------
