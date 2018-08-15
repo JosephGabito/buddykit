@@ -1,7 +1,10 @@
 <?php
 //----//----//----//----//----//----//----//----//----
 
-$settings = new OptionKit( 'your_unique_identifier' );
+$settings = new OptionKit( 
+	'Cat Settings', 
+	'your_unique_identifier' 
+);
 
 // Creates a top level menu in WordPress.
 $settings->menu( array(
@@ -14,9 +17,21 @@ $settings->menu( array(
 // Creates a submenu inside our newly created top level menu.
 $settings->submenu( array(
 	'parent_slug' => $settings->menu['menu_slug'],
-	'page_title' => 'Submenu Page Title',
-	'menu_title' => 'Submenu Page Title',
+	'page_title' => 'Cat Character',
+	'menu_title' => 'Cat Character',
+	'menu_slug' => 'my-options'
 ));
+
+// Creates a submenu inside our newly created top level menu.
+$settings->submenu( array(
+	'parent_slug' => $settings->menu['menu_slug'],
+	'page_title' => 'Cat Temper',
+	'menu_title' => 'Cat Temper',
+	'menu_slug' => 'my-optionss'
+));
+
+
+// ---// ---// ---// ---// ---// ---
 
 $settings->addSection(array(
 	'id' => 'eg_setting_section',
@@ -28,7 +43,13 @@ $settings->addSection(array(
 $settings->addSection(array(
 	'id' => 'eg_setting_se2asdction',
 	'label' => 'reading',
-	'page' => 'cat-options'
+	'page' => 'my-options'
+));
+
+$settings->addSection(array(
+	'id' => 'eg_settings_se2asdction',
+	'label' => 'readinsdg',
+	'page' => 'my-options'
 ));
 
 //$settings->addField();

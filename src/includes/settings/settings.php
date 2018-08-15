@@ -7,16 +7,19 @@ class OptionKit {
 
 	var $menu = array();
 
-	var $submenu = array();
+	var $submenus = array();
 
 	var $sections = array();
 
 	var $fields = array();
 
+	var $title = '';
+
 	var $identifer = "";
 
-	public function __construct( $identifer ) {
+	public function __construct( $title, $identifer ) {
 		$this->identifer = $identifer;
+		$this->title = $title;
 	}
 
 	public function initialize() 
@@ -41,27 +44,28 @@ class OptionKit {
 		endif;
 
 		//Submenu.
-		if ( ! empty( $this->submenu ) ):
-			add_submenu_page(
-				$this->submenu['parent_slug'], 
-				$this->submenu['page_title'], 
-				$this->submenu['menu_title'], 
-				$this->submenu['capability'], 
-				$this->submenu['menu_slug'], 
-				$this->submenu['function']
-			);
+		if ( ! empty( $this->submenus ) ):
+			foreach ( $this->submenus as $submenu ):
+				add_submenu_page(
+					$submenu['parent_slug'], 
+					$submenu['page_title'], 
+					$submenu['menu_title'], 
+					$submenu['capability'], 
+					$submenu['menu_slug'], 
+					$submenu['function']
+				);
+			endforeach;
 		endif;
-
-		
 
 		return;
 	}
 
 	public function createOptionFields(){
 
-		register_setting( $this->identifer, 'eg_setting_name' );
-		
 		foreach ( $this->sections as $section ) {
+
+			register_setting( $this->identifer, $section['page'] );
+
 			add_settings_section(
 				$section['id'],
 				$section['label'],
@@ -97,17 +101,17 @@ class OptionKit {
 	public function submenu( $args = array() ) 
 	{
 		$defaults = array(
-				'parent_slug' => 'options-general.php',
-				'page_title' => 'My Options',
-				'menu_title' => 'My Options',
-				'capability' => 'manage_options',
-				'menu_slug' => 'my-options',
-				'function' => array( $this, 'content' ),
-			);
+			'parent_slug' => 'options-general.php',
+			'page_title' => 'My Options',
+			'menu_title' => 'My Options',
+			'capability' => 'manage_options',
+			'menu_slug' => '',
+			'function' => array( $this, 'content' ),
+		);
 
-		$this->submenu = wp_parse_args( $args, $defaults );
+		$this->submenus[] = wp_parse_args( $args, $defaults );
 
-		return $this->submenu;
+		return $this->submenus;
 			
 	}
 
@@ -121,13 +125,17 @@ class OptionKit {
 
 	    ?>
 	    <div class="wrap">
-	    	<h1 class="wp-heading-inline">Cat Options</h1>
-	    	<?php settings_fields( 'cat-options' ); ?>
-	    	<?php  
-	    		do_settings_sections( 'cat-options' );
- 				// output save settings button
- 				submit_button( 'Save Settings' ) 
- 			?>
+	    	
+	    	<h1 class="wp-heading-inline">
+	    		<?php echo wp_kses_post( $this->getPageTitle() ); ?>
+	    	</h1>
+
+	    	<form action="options.php" method="post">
+	    		<?php settings_fields( $this->identifer ); ?>
+	    		<?php do_settings_sections( $_GET['page'] ); ?>
+				<?php submit_button( 'Save Settings' ); ?>
+	    	</form>
+	    	
 	    </div>
 	    <?php
 
@@ -167,6 +175,17 @@ class OptionKit {
 			'asdasd',
 			'eg_setting_section'
 		);
+	}
+
+	protected function getPageTitle() {
+		$current_page = $_GET['page'];
+
+		foreach ( $this->submenus as $submenu ) {
+			if ( $submenu['menu_slug'] === $current_page ) {
+				return apply_filters('optionkit_content_title', $submenu['page_title'] );
+			}
+		}
+		return apply_filters('optionkit_content_title', $this->title );
 	}
 
 }
