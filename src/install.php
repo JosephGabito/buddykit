@@ -17,6 +17,7 @@ global $wpdb;
 
 register_activation_hook( __FILE__, 'buddykit_install' );
 register_activation_hook( __FILE__, 'buddykit_install_data' );
+
 add_action( 'plugins_loaded', 'buddykit_update_db_check' );
 
 /**

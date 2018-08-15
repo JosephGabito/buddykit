@@ -244,19 +244,10 @@ add_action('buddykit_settings_tab_fields', function(){
 function buddykit_section_rtn_view() {
 	echo '<div class="">';
 	echo '<p>';
-		esc_html_e( 'BuddyKit uses Pusher(for now) to serve your real-time notifications. Mimicking live events with PHP and MySQL is unsustainable and expensive (Unless you want to mess with WebSockets).', 'buddykit' );
-	echo '</p>';
-
-	echo '<p>';
-		esc_html_e('With services like Pusher, Firebase(soon), and Ably(soon), you\'ll be using their servers for your real-time functionalities reducing the stress of your server. They offer a free version, and you may upgrade in the future if you need more resources.', 'buddykit');
-	echo '</p>';
-
-	echo '<p>';
-		esc_html_e( 'Other WordPress plugins use Short Pooling or WordPress Heartbeat API to serve the fake live notifications. What it does it sends a request every interval to check for updates, now imagine what will happen you have hundreds of users who check at the specified interval. This practice is awful and makes your server super slow..','buddykit' );
-	echo '</p>';
-
-	echo '<p>';
-		esc_html_e('Check out this link for a quick tutorial on how to set-up your Pusher with BuddyKit.. ', 'buddykit');
+		$pusher_link = '<a target="_blank" href="'.esc_attr__('https://pusher.com/', 'buddykit').'" title="'.esc_attr__('Pusher', 'buddykit').'">'.esc_html__('Pusher', 'buddykit').'</a>';
+		echo sprintf( __('BuddyKit uses %s to serve your real-time notifications.', 'buddykit'), $pusher_link );
+		echo '&nbsp;';
+		echo sprintf( esc_html__('%s in Pusher website, then create a Channels app. Go to the "Keys" page for that app, and make a note of your app_id, key, secret and cluster.', 'buddykit'), '<a href="'.esc_url('https://dashboard.pusher.com/accounts/sign_up').'" title="'.__('Create an account','buddykit').'" target="_blank">'.__('Create an account','buddykit').'</a>');
 	echo '</p>';
 
 	echo '<hr/>';
