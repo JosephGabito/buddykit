@@ -34,6 +34,7 @@ require_once BUDDYKIT_PATH . 'src/install.php';
 
 // Include our settings api.
 require_once BUDDYKIT_PATH . 'src/includes/settings/settings.php';
+require_once BUDDYKIT_PATH . 'src/includes/settings/sample.php';
 /*
 require_once BUDDYKIT_PATH . 'src/includes/media/admin-options/admin-options.php';
 
