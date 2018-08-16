@@ -48,14 +48,25 @@ $settings->addSection(array(
 ));
 
 $settings->addField(array(
-	'id' => 'fields-id',
+	'id' => 'as3dd',
 	'title' => 'Text Field',
 	'page' => 'my-options',
 	'section' => 'pusher_settings',
 	'default' => '1 2 3 four five',
-	'args' => array(
-			'description' => 'Enter some shit',
-			'type' => 'text',
+	'description' => 'Test'
+));
+
+$settings->addField(array(
+	'id' => 'as3d',
+	'type' => 'textarea',
+	'title' => 'Text Field 2',
+	'page' => 'my-options',
+	'section' => 'pusher_settings',
+	'default' => '1 2 3 four five six',
+	'description' => 'Test2',
+	'attributes' => array(
+			'rows' => 6,
+			'cols' => 100
 		)
 ));
 
