@@ -24,7 +24,6 @@ class MenuFields {
 		$this->identifer = $identifer;
 		$this->title = $title;
 	}
-
 	public function initialize() 
 	{
 		add_action('admin_menu', array($this, 'createOptionPage'));
@@ -221,7 +220,7 @@ class MenuFields {
 			if ( file_exists( $field_file )) {
 				require_once $field_file;
 			} else {
-				echo sprintf( esc_html__('Field type "%s" is not supported.', 'optionkit'), $type );
+				echo sprintf( esc_html__('The field type "%s" is not supported.', 'optionkit'), $type );
 				return;
 			}
 		}
@@ -238,9 +237,30 @@ class MenuFields {
 				$field = new OptionKit\FieldTypes\Select($args);
 			break;
 
+			case 'radio':
+				$field = new OptionKit\FieldTypes\Radio($args);
+			break;
+
+			case 'checkbox':
+				$field = new OptionKit\FieldTypes\CheckBox($args);
+			break;
+
+			case 'url':
+				$field = new OptionKit\FieldTypes\Url($args);
+			break;
+
+			case 'number':
+				$field = new OptionKit\FieldTypes\Number($args);
+			break;
+
+			case 'wysiwyg':
+				$field = new OptionKit\FieldTypes\WYSIWYG($args);
+			break;
+
 		endswitch;
 
 		$field->display();
+
 	}
 
 	public function addSection( $args ) 
