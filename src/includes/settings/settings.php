@@ -1,5 +1,8 @@
 <?php
-class OptionKit {
+namespace OptionKit;
+use OptionKit;
+
+class MenuFields {
 
 	var $frameworkName = "OptionKit";
 	
@@ -62,9 +65,8 @@ class OptionKit {
 
 	public function createOptionFields(){
 
+		// All of settings sections.
 		foreach ( $this->sections as $section ) {
-
-			register_setting( $this->identifer, $section['page'] );
 
 			add_settings_section(
 				$section['id'],
@@ -74,34 +76,42 @@ class OptionKit {
 			);
 
 		}
+		// Add all section fields.
+		foreach ( $this->fields as $field ) {
+			add_settings_field(
+				$field['id'],
+				$field['title'],
+				$field['callback'],
+				$field['page'],
+				$field['section'],
+				$field['args']
+			);
 
-		add_settings_field(
-			'myprefix_setting-id',
-			'This is the setting title',
-			function(){
-				echo '<input type="text" /><p class="description">Enter cat mode!</p>';
-			},
-			'my-options',
-			'pusher_credits',
-			array( 'label_for' => 'myprefix_setting-id' )
-		);
-		
+			register_setting( $this->identifer, $field['id'] );
+
+		}
 	}
 
 	public function menu( $args = array() ) 
 	{
 
 		$defaults = array(
-			'page_title' => 'OptionKit Default Page Title',
+			'page_title' => '',
 			'menu_title' => 'OptionKit Default Menu Title',
 			'capability' => 'manage_options',
 			'menu_slug' => '',
-			'callback' => array( $this, 'content'),
+			'callback' => array( $this, 'wrap'),
 			'icon_url' => '',
-			'position' => 20
+			'position' => 80
 		);
 
-		$this->menu = wp_parse_args( $args, $defaults );
+		$menu = wp_parse_args( $args, $defaults );
+
+		if ( empty( $menu['page_title'] ) ) {
+			$menu['page_title'] = $menu['menu_title'];
+		}
+
+		$this->menu = $menu;
 
 		if ( empty( $args['menu_slug'] ) ) {
 			wp_die( $this->frameworkName . ' Error: \'menu_slug\' is empty or not defined.');
@@ -110,24 +120,39 @@ class OptionKit {
 		return $this->menu;
 	}
 
+	/**
+	 * Registers a submenu.
+	 * @param  array  $args The arguments.
+	 * @return array  The submenu properties.
+	 */
 	public function submenu( $args = array() ) 
 	{
 		$defaults = array(
 			'parent_slug' => 'options-general.php',
-			'page_title' => 'My Options',
+			'page_title' => '',
 			'menu_title' => 'My Options',
 			'capability' => 'manage_options',
 			'menu_slug' => '',
-			'function' => array( $this, 'content' ),
+			'function' => array( $this, 'wrap' ),
 		);
 
-		$this->submenus[] = wp_parse_args( $args, $defaults );
+		$submenu = wp_parse_args( $args, $defaults );
+
+		if ( empty( $submenu['page_title'] ) ) {
+			$submenu['page_title'] = $submenu['menu_title'];
+		}
+
+		$this->submenus[] = $submenu;
 
 		return $this->submenus;
 			
 	}
 
-	public function content() 
+	public function wrap() {
+		$this->content();
+	}
+
+	protected function content() 
 	{
 		// must check that the user has the required capability.
 	    if (!current_user_can('manage_options'))
@@ -175,6 +200,16 @@ class OptionKit {
 		}
 	}
 
+	public function fieldCallback( $args ) {
+		switch ( $args ):
+			default:
+				require_once BUDDYKIT_PATH . 'src/includes/settings/field-types/text.php';
+				$field = new OptionKit\FieldTypes\Text($args);
+				$field->display();
+			break;
+		endswitch;
+	}
+
 	public function addSection( $args ) 
 	{
 
@@ -189,14 +224,28 @@ class OptionKit {
 		
 	}
 
-	public function addField() {
-		add_settings_field(
-			'eg_setting_name',
-			'Example setting Name',
-			'eg_setting_callback_function',
-			'asdasd',
-			'eg_setting_section'
+	public function addField( $args ) {
+
+		$defaults = array(
+			'callback' => array( $this, 'fieldCallback' ),
 		);
+
+		$args_defaults = array(
+			'id' => $args['id'],
+			'name' => $args['id'],
+			'default' => $args['default'],
+			'class' => 'optionkit-field'
+		);
+
+		$this->fields[] = wp_parse_args( array(
+				'id' => $args['id'],
+				'title' => $args['title'],
+				'page' => $args['page'],
+				'section' => $args['section'],
+				'args' => wp_parse_args( $args['args'], $args_defaults ),
+			), $defaults);
+
+		return $this->fields;
 	}
 
 	protected function getPageTitle() {

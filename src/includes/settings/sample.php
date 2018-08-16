@@ -1,33 +1,30 @@
 <?php
 //----//----//----//----//----//----//----//----//----
-
-$settings = new OptionKit( 
+$settings = new OptionKit\MenuFields( 
 	'Cat Settings', 
 	'your_unique_identifier' 
 );
 
 // Creates a top level menu in WordPress.
 $settings->menu( array(
-	'menu_title' => 'BuddyKit',
+	'menu_title' => 'Community',
 	'menu_slug' => 'cat-options',
-	'icon_url' => 'http://localhost/thrive/wp-content/uploads/2018/08/if_cat_285654.png'
+	'icon_url' => 'dashicons-groups',
 ));
 
 // Creates a submenu inside our newly created top level menu.
 $settings->submenu( array(
 	'parent_slug' => $settings->menu['menu_slug'],
-	'menu_title' => 'Live Notifications',
+	'menu_title' => __('Live Notifications', 'my-textdomain'),
 	'menu_slug' => 'my-options'
 ));
 
 // Creates a submenu inside our newly created top level menu.
 $settings->submenu( array(
 	'parent_slug' => $settings->menu['menu_slug'],
-	'page_title' => 'Cat Temper',
 	'menu_title' => 'Cat Temper',
 	'menu_slug' => 'my-optionss'
 ));
-
 
 // ---// ---// ---// ---// ---// ---
 
@@ -50,7 +47,17 @@ $settings->addSection(array(
 	'page' => 'my-options'
 ));
 
-
+$settings->addField(array(
+	'id' => 'fields-id',
+	'title' => 'Text Field',
+	'page' => 'my-options',
+	'section' => 'pusher_settings',
+	'default' => '1 2 3 four five',
+	'args' => array(
+			'description' => 'Enter some shit',
+			'type' => 'text',
+		)
+));
 
 $unique_option_group = 'asdadsd';
 
