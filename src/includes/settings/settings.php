@@ -214,23 +214,32 @@ class MenuFields {
 
 	public function fieldCallback( $args ) {
 		
-		$type = $args['type'];
+		$type = ! empty ( $args['type'] ) ? $args['type'] : 'text'; 
 		
-		require_once BUDDYKIT_PATH . 'src/includes/settings/field-types/text.php';
 		if ( ! empty( $type ) ) {
-			$field_file = require_once BUDDYKIT_PATH . 'src/includes/settings/field-types/'.sanitize_title($type).'.php';
+			$field_file = BUDDYKIT_PATH . 'src/includes/settings/field-types/'.sanitize_title($type).'.php';
 			if ( file_exists( $field_file )) {
 				require_once $field_file;
+			} else {
+				echo sprintf( esc_html__('Field type "%s" is not supported.', 'optionkit'), $type );
+				return;
 			}
 		}
 		switch ( $type ):
-			default:
+
+			case 'text':
 				$field = new OptionKit\FieldTypes\Text($args);
 			break;
 			case 'textarea':
 				$field = new OptionKit\FieldTypes\TextArea($args);
 			break;
+
+			case 'select':
+				$field = new OptionKit\FieldTypes\Select($args);
+			break;
+
 		endswitch;
+
 		$field->display();
 	}
 

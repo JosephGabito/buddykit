@@ -70,6 +70,38 @@ $settings->addField(array(
 		)
 ));
 
+$settings->addField(array(
+	'id' => 'as3dasd',
+	'type' => 'select',
+	'title' => 'Select',
+	'page' => 'my-options',
+	'section' => 'pusher_settings',
+	'default' => 'option-2',
+	'description' => 'Select Field',
+	'options' => array(
+			'option-1' => 'Options 1',
+			'option-2' => 'Options 2',
+			'option-3' => 'Options 3',
+		)
+	
+));
+
+$settings->addField(array(
+	'id' => 'as3dasd2',
+	'type' => 'select',
+	'title' => 'Select 2',
+	'page' => 'my-options',
+	'section' => 'pusher_credits',
+	'default' => 'option-2',
+	'description' => 'Select Field',
+	'options' => array(
+			'option-1' => 'Options 1',
+			'option-2' => 'Options 2',
+			'option-3' => 'Options 3',
+		)
+	
+));
+
 $unique_option_group = 'asdadsd';
 
 $settings->initialize( $unique_option_group );
