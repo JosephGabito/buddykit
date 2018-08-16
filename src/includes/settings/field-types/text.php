@@ -11,13 +11,14 @@ class Text {
 
 	public function display() {
 		do_action('optionkit-before-field');
+
 		?>
 		<input
 			type="text" 
 			id="<?php echo esc_attr( $this->atts['id'] ); ?>"
 			name="<?php echo esc_attr( $this->atts['name'] ); ?>"
-			class="<?php echo esc_attr( $this->atts['class'] ); ?>"
-			value="<?php echo esc_attr( get_option( $this->atts['id'], $this->atts['default'] ) ); ?>" 
+			value="<?php echo sanitize_text_field( get_option( $this->atts['id'], $this->atts['default'] ) ); ?>" 
+			<?php echo $this->atts['attributes'] ; ?>
 		/>
 		<p class="description">
 			<?php echo wp_kses_post( $this->atts['description'] ); ?>
