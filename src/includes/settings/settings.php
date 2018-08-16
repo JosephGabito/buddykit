@@ -78,6 +78,7 @@ class MenuFields {
 		}
 		// Add all section fields.
 		foreach ( $this->fields as $field ) {
+			
 			add_settings_field(
 				$field['id'],
 				$field['title'],
@@ -87,9 +88,20 @@ class MenuFields {
 				$field['args']
 			);
 
+			/*register_setting( $this->identifer, $field['id'], array(
+				'sanitize_callback' => array($this, 'validate')  
+			));*/
+
 			register_setting( $this->identifer, $field['id'] );
 
 		}
+	}
+
+	public function validateInt( $value ) {
+
+		add_settings_error( 'settings_message', 'error', 'There is an error.', 'error' );
+
+		return $value;
 	}
 
 	public function menu( $args = array() ) 
@@ -201,13 +213,25 @@ class MenuFields {
 	}
 
 	public function fieldCallback( $args ) {
-		switch ( $args ):
+		
+		$type = $args['type'];
+		
+		require_once BUDDYKIT_PATH . 'src/includes/settings/field-types/text.php';
+		if ( ! empty( $type ) ) {
+			$field_file = require_once BUDDYKIT_PATH . 'src/includes/settings/field-types/'.sanitize_title($type).'.php';
+			if ( file_exists( $field_file )) {
+				require_once $field_file;
+			}
+		}
+		switch ( $type ):
 			default:
-				require_once BUDDYKIT_PATH . 'src/includes/settings/field-types/text.php';
 				$field = new OptionKit\FieldTypes\Text($args);
-				$field->display();
+			break;
+			case 'textarea':
+				$field = new OptionKit\FieldTypes\TextArea($args);
 			break;
 		endswitch;
+		$field->display();
 	}
 
 	public function addSection( $args ) 
@@ -226,24 +250,36 @@ class MenuFields {
 
 	public function addField( $args ) {
 
-		$defaults = array(
+		$args_defaults = array(
+			'id' => '',
+			'default' => '',
+			'section' => '',
+			'description' => '',
+			'attributes' => array(),
 			'callback' => array( $this, 'fieldCallback' ),
+			'name' => $args['id'],
+			'label_for' => $args['id'],
+			'type' => ''
 		);
 
-		$args_defaults = array(
-			'id' => $args['id'],
-			'name' => $args['id'],
-			'default' => $args['default'],
-			'class' => 'optionkit-field'
-		);
+		$args = wp_parse_args( $args, $args_defaults );
+
+		// Convert attributes key to html element attributes format.
+		if ( is_array( $args['attributes'] ) ) {
+			$attribute = "";
+			foreach( $args['attributes'] as $key => $val ) {
+				$attribute .= sprintf('%s="%s" ', esc_attr( $key ), esc_attr( $val ) );
+			}
+			$args['attributes'] = " " . $attribute . " ";
+		}
 
 		$this->fields[] = wp_parse_args( array(
 				'id' => $args['id'],
 				'title' => $args['title'],
 				'page' => $args['page'],
 				'section' => $args['section'],
-				'args' => wp_parse_args( $args['args'], $args_defaults ),
-			), $defaults);
+				'args' => $args,
+			), $args_defaults );
 
 		return $this->fields;
 	}
@@ -255,3 +291,5 @@ class MenuFields {
 	}
 
 }
+
+
