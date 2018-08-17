@@ -110,6 +110,61 @@ add_action('init', function(){
 	));
 
 	$settings->addField(array(
+		'id' => 'as3dassdasd2',
+		'type' => 'multiselect',
+		'title' => 'Multiselect',
+		'page' => 'my-options',
+		'section' => 'pusher_credits',
+		'default' => 'option-2',
+		'description' => 'Select the default size of the tshirt',
+		'options' => array(
+				'option-1' => 'Options 1',
+				'option-2' => 'Options 2',
+				'option-3' => 'Options 3',
+			)
+	));
+
+	$settings->addField(array(
+		'id' => 'as3d1sasd2',
+		'type' => 'colorpicker',
+		'title' => 'Color Picker',
+		'page' => 'my-options',
+		'section' => 'pusher_credits',
+		'default' => '#992211',
+		'description' => 'Choose color',
+	));
+
+	$settings->addField(array(
+		'id' => 'email_address',
+		'type' => 'email',
+		'title' => 'Email Address',
+		'page' => 'my-options',
+		'section' => 'pusher_credits',
+		'default' => '',
+		'description' => 'Enter Email Address',
+	));
+
+	$settings->addField(array(
+		'id' => 'password',
+		'type' => 'password',
+		'title' => 'Password',
+		'page' => 'my-options',
+		'section' => 'pusher_credits',
+		'default' => '',
+		'description' => 'Password should be 256 characters long and should end with emoji.',
+	));
+
+	$settings->addField(array(
+		'id' => 'image-upload',
+		'type' => 'image-upload',
+		'title' => 'Image Upload',
+		'page' => 'my-options',
+		'section' => 'pusher_credits',
+		'default' => '',
+		'description' => 'Image Upload.',
+	));
+
+	$settings->addField(array(
 		'id' => 'asd231sd22s',
 		'type' => 'radio',
 		'title' => 'Radio Selection',
@@ -187,4 +242,6 @@ add_action('init', function(){
 
 	}
 }, 10);
+
+
  
