@@ -28,6 +28,11 @@ class MenuFields {
 	{
 		add_action('admin_menu', array($this, 'createOptionPage'));
 		add_action('admin_init', array($this, 'createOptionFields') );
+		add_action('admin_enqueue_scripts', array($this, 'adminEnqueueScript'));
+	}
+
+	function adminEnqueueScript() {
+		wp_enqueue_script( 'optionkit-js', plugins_url('/assets/js/optionkit.js', __FILE__), array('jquery'), $this->version, false );
 	}
 
 	function createOptionPage() {
@@ -212,7 +217,7 @@ class MenuFields {
 	}
 
 	public function fieldCallback( $args ) {
-		
+	
 		$type = ! empty ( $args['type'] ) ? $args['type'] : 'text'; 
 		
 		if ( ! empty( $type ) ) {
@@ -229,12 +234,29 @@ class MenuFields {
 			case 'text':
 				$field = new OptionKit\FieldTypes\Text($args);
 			break;
+
+			case 'email':
+				$field = new OptionKit\FieldTypes\Email($args);
+			break;
+
+			case 'password':
+				$field = new OptionKit\FieldTypes\Password($args);
+			break;
+
 			case 'textarea':
 				$field = new OptionKit\FieldTypes\TextArea($args);
 			break;
 
+			case 'colorpicker':
+				$field = new OptionKit\FieldTypes\ColorPicker($args);
+			break;
+
 			case 'select':
 				$field = new OptionKit\FieldTypes\Select($args);
+			break;
+
+			case 'multiselect':
+				$field = new OptionKit\FieldTypes\MultiSelect($args);
 			break;
 
 			case 'radio':
@@ -255,6 +277,10 @@ class MenuFields {
 
 			case 'wysiwyg':
 				$field = new OptionKit\FieldTypes\WYSIWYG($args);
+			break;
+
+			case 'image-upload':
+				$field = new OptionKit\FieldTypes\MediaUpload($args);
 			break;
 
 		endswitch;
