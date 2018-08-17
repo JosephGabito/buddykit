@@ -18,11 +18,9 @@ class CheckBox {
 			return;
 		}
 
-		
-		
-		$counter = 0;
+		$options = apply_filters( 'optionkit-field-value-'.$this->atts['id'], $this->atts['options'] ); 
 
-		foreach( $this->atts['options'] as $key => $val ): ?>
+		foreach( $options as $key => $val ): ?>
 
 			<?php $checked = ''; ?>
 			
@@ -42,8 +40,6 @@ class CheckBox {
 				<?php echo esc_html( $val ); ?>
 				</label>
 			</p>
-			
-			<?php $counter ++ ;?>
 
 		<?php endforeach; ?>
 
