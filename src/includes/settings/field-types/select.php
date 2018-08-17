@@ -18,7 +18,8 @@ class Select {
 		$value = get_option( $this->atts['id'], $this->atts['default'] );
 		?>
 		<select <?php echo $this->atts['attributes']; ?> id="<?php echo esc_attr( $this->atts['name'] ); ?>" name="<?php echo esc_attr( $this->atts['name'] ); ?>" <?php echo $this->atts['attributes'] ; ?>>
-			<?php foreach( $this->atts['options'] as $key => $val ): ?>
+		<?php $options = apply_filters( 'optionkit-field-value-'.$this->atts['id'], $this->atts['options'] ); ?>	
+			<?php foreach( $options as $key => $val ): ?>
 				<?php $selected = ''; ?>
 				<?php if ( $key === $value ) {?>
 					<?php $selected = 'selected'; ?>
