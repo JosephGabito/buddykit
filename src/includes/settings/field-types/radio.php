@@ -20,7 +20,9 @@ class Radio {
 
 		$value = get_option( $this->atts['id'], $this->atts['default'] );
 		
-		foreach( $this->atts['options'] as $key => $val ): ?>
+		$options = apply_filters( 'optionkit-field-value-'.$this->atts['id'], $this->atts['options'] ); 
+		
+		foreach( $options as $key => $val ): ?>
 
 			<?php $checked = ''; ?>
 
