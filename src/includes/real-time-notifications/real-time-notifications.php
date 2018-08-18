@@ -291,6 +291,7 @@ function buddykit_rtn_pusher_check_view( $args ) {
  * @param  array $args The field arguments.
  * @return void
  */
+
 function buddykit_rtn_pusher_text_view( $args ) {
 
 	$options = wp_parse_args( get_option( 'buddykit_settings' ), array(
