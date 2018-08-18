@@ -33,9 +33,10 @@ require_once BUDDYKIT_PATH . 'config/config.php';
 require_once BUDDYKIT_PATH . 'src/install.php';
 
 // Include our settings api.
-require_once BUDDYKIT_PATH . 'src/includes/optionkit/optionkit.php';
+require_once BUDDYKIT_PATH . 'src/includes/optionkit/optionkit-register.php';
+
+
 require_once BUDDYKIT_PATH . 'src/includes/buddykit-settings.php';
-//require_once BUDDYKIT_PATH . 'src/includes/settings/sample.php';
 
 require_once BUDDYKIT_PATH . 'src/includes/media/admin-options/admin-options.php';
 require_once BUDDYKIT_PATH . 'src/includes/media/class-media.php';
