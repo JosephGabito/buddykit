@@ -51,7 +51,7 @@ add_action('init', function(){
 	));
 
 	$settings->addField(array(
-		'id' => 'as3dd',
+		'id' => 'text-field',
 		'title' => 'Text Field',
 		'page' => 'my-options',
 		'section' => 'pusher_settings',
@@ -132,6 +132,20 @@ add_action('init', function(){
 		'section' => 'pusher_credits',
 		'default' => '#992211',
 		'description' => 'Choose color',
+	));
+
+	$settings->addField(array(
+		'id' => 'slider-field',
+		'type' => 'range',
+		'title' => 'Range Field',
+		'page' => 'my-options',
+		'section' => 'pusher_credits',
+		'default' => 500,
+		'description' => 'Select a range',
+		'attributes' => array(
+				'min' => 250,
+				'max' => 2000,
+			)
 	));
 
 	$settings->addField(array(
