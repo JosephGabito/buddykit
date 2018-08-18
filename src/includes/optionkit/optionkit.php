@@ -4,6 +4,7 @@ namespace OptionKit;
 if ( ! defined( 'ABSPATH' ) ) {
 	return;
 }
+
 use OptionKit;
 
 class MenuFields {
@@ -22,12 +23,21 @@ class MenuFields {
 
 	var $title = '';
 
-	var $identifer = "";
+	var $identifier = "";
 
-	public function __construct( $title, $identifer ) {
-		$this->identifer = $identifer;
-		$this->title = $title;
+	private static $instance;
+
+	public static function getInstance() {
+
+		if ( null === self::$instance ) {
+            self::$instance = new self();
+        }
+ 
+        return self::$instance;
 	}
+
+	private function __construct() {}
+
 	public function register() 
 	{
 		add_action('admin_menu', array($this, 'createOptionPage'));
@@ -43,15 +53,17 @@ class MenuFields {
 
 		// Add main menu
 		if ( ! empty( $this->menu ) ): 
-			add_menu_page( 
-				$this->menu['page_title'],
-				$this->menu['menu_title'], 
-				$this->menu['capability'], 
-				$this->menu['menu_slug'],
-				$this->menu['callback'],
-				$this->menu['icon_url'], 
-				$this->menu['position']
-			);
+			foreach ( $this->menu as $menu ):
+				add_menu_page( 
+					$menu['page_title'],
+					$menu['menu_title'], 
+					$menu['capability'], 
+					$menu['menu_slug'],
+					$menu['callback'],
+					$menu['icon_url'], 
+					$menu['position']
+				);
+			endforeach;
 		endif;
 
 		//Submenu.
@@ -100,7 +112,9 @@ class MenuFields {
 				'sanitize_callback' => array($this, 'validate')  
 			));*/
 
-			register_setting( $this->identifer, $field['id'] );
+			register_setting( $field['section'], $field['id'], array(
+				'show_in_rest' => false
+			) );
 
 		}
 	}
@@ -131,7 +145,7 @@ class MenuFields {
 			$menu['page_title'] = $menu['menu_title'];
 		}
 
-		$this->menu = $menu;
+		$this->menu[] = $menu;
 
 		if ( empty( $args['menu_slug'] ) ) {
 			wp_die( $this->frameworkName . ' Error: \'menu_slug\' is empty or not defined.');
@@ -198,7 +212,7 @@ class MenuFields {
 	    	</h1>
 
 	    	<form action="options.php" method="post">
-	    		<?php settings_fields( $this->identifer ); ?>
+	    		<?php settings_fields( $this->identifier ); ?>
 	    		<?php do_settings_sections( $_GET['page'] ); ?>
 				<?php submit_button( 'Save Settings' ); ?>
 	    	</form>
@@ -357,6 +371,7 @@ class MenuFields {
 		return get_admin_page_title();
 		
 	}
+
 
 }
 
