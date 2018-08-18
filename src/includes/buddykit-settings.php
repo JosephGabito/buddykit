@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	return;
+}
 
 add_action('init', 'buddykit_load_settings');
 
@@ -8,21 +11,38 @@ function buddykit_load_settings()
 	if ( ! is_admin() ) {
 		return;
 	}
-	
-	$settings = new OptionKit\MenuFields( 
-		esc_html__('BuddyKit Settings', 'optionkit'), 
-		'buddykit_settings'
-	);
+
+	$settings = optionkit();
 
 	// Creates a top level menu in WordPress.
 	$settings->menu( array(
 		'menu_title' => __('BuddyKit', 'optionkit'),
 		'menu_slug' => 'buddykit-main-option',
-		'icon_url' => 'dashicons-groups',
+		'icon_url' => 'dashicons-hammer',
 	));
 
+	$settings->addSection(array(
+		'id' => 'buddykit-components',
+		'label' => __('Components', 'optionkit'),
+		'desc' => __('Enable or disable Buddykit Components.', 'optionkit'),
+		'page' => 'buddykit-main-option'
+	));
 
-	// Start the script.
+	$settings->addField(array(
+		'id' => 'buddykit-media-max-image-size',
+		'title' => __('Active Components','optionkit'),
+		'page' => 'buddykit-main-option',
+		'type' => 'checkbox',
+		'section' => 'buddykit-components',
+		'default' => array('activity-media', 'realtime-notifications'),
+		'description' => __('Select which component ', 'optionkit'),
+		'options' => array(
+				'activity-media' => __('Activity Media', 'optionkit'),
+				'realtime-notifications' => __('Realtime Notifications', 'optionkit'),
+			)
+	));
+
+	// Register the settings.
 	$settings->register();
 
 }
