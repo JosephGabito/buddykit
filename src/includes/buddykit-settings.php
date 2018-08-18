@@ -29,7 +29,7 @@ function buddykit_load_settings()
 	));
 
 	$settings->addField(array(
-		'id' => 'buddykit-media-max-image-size',
+		'id' => 'buddykit-components',
 		'title' => __('Active Components','optionkit'),
 		'page' => 'buddykit-main-option',
 		'type' => 'checkbox',
