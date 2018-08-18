@@ -111,8 +111,7 @@ class MenuFields {
 			/*register_setting( $this->identifer, $field['id'], array(
 				'sanitize_callback' => array($this, 'validate')  
 			));*/
-
-			register_setting( $field['section'], $field['id'], array(
+			register_setting( $field['page'], $field['id'], array(
 				'show_in_rest' => false
 			) );
 
@@ -212,7 +211,11 @@ class MenuFields {
 	    	</h1>
 
 	    	<form action="options.php" method="post">
-	    		<?php settings_fields( $this->identifier ); ?>
+	    		<?php $page = ''; ?>
+	    		<?php if ( isset( $_GET['page'] ) ): ?>
+	    			<?php $page = $_GET['page']; ?>
+	    		<?php endif; ?>
+	    		<?php settings_fields( $page ); ?>
 	    		<?php do_settings_sections( $_GET['page'] ); ?>
 				<?php submit_button( 'Save Settings' ); ?>
 	    	</form>
