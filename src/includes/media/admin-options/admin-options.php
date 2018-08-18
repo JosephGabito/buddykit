@@ -8,8 +8,10 @@ add_action('init', function(){
 	if ( ! is_admin() ) {
 		return;
 	}
+	
 	//Check if activity media is enabled or disabled.
-	$components = (array) get_option( 'buddykit-media-max-image-size' );
+	$components = (array) get_option( 'buddykit-components', array('activity-media', 'realtime-notifications') );
+
 	if ( ! in_array('activity-media', $components ) ) {
 		return;
 	}
