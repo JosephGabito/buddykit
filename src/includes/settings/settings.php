@@ -279,6 +279,10 @@ class MenuFields {
 				$field = new OptionKit\FieldTypes\WYSIWYG($args);
 			break;
 
+			case 'range':
+				$field = new OptionKit\FieldTypes\Range($args);
+			break;
+
 			case 'image-upload':
 				$field = new OptionKit\FieldTypes\MediaUpload($args);
 			break;
