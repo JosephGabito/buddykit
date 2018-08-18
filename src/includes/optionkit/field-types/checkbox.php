@@ -14,7 +14,7 @@ class CheckBox {
 		do_action('optionkit-before-field');
 
 		if ( empty( $this->atts['options'] ) ) {
-			esc_html_e('options argument for field type "radio" is not defined', 'optionkit');
+			esc_html_e('options argument for field type "checkbox" is not defined', 'optionkit');
 			return;
 		}
 
@@ -26,7 +26,7 @@ class CheckBox {
 			
 			<?php $name = sprintf("%s[]", $this->atts['id']); ?>
 
-			<?php $saved_option = get_option( $this->atts['id'] ); ?>
+			<?php $saved_option = (array)get_option( $this->atts['id'], $this->atts['default'] ); ?>
 
 			<?php if ( in_array( $key, $saved_option ) ) { ?>
 				<?php $checked = 'checked'; ?>
