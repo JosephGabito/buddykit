@@ -16,6 +16,21 @@ function buddykit_honeypot_get_decoy_field_id () {
 
 }
 
+function buddykit_security_sfs_verify_email() {
+	// setup the URL
+	$url = 'http://api.stopforumspam.org/api';
+
+	$data = array(
+	    'email' => urlencode("daqmoeq@hentai-games.online"),
+	);
+
+	$result = wp_remote_get( $url, $data );
+	echo '<pre>';
+	print_r($result['body']);
+	die;
+	return $result;
+}
+
 add_action('wp_enqueue_scripts', function(){
 	wp_register_script('g-recaptcha', 'https://www.google.com/recaptcha/api.js');
 });
@@ -51,6 +66,11 @@ add_action('bp_core_validate_user_signup', function( $result ){
 
 	$option_captcha  = (array)get_option('buddykit-security-recaptcha-is-enabled', array());
 	$option_honeypot = (array)get_option('buddykit-security-honey-pot-enabled', array());
+
+	// Check if user is a spammer.
+    $result = buddykit_security_sfs_verify_email();
+    print_r($result);
+    die();
 
 	if ( in_array( 'enabled', $option_captcha ) ) {
 		if ( empty( $captcha ) ) {
