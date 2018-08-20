@@ -32,15 +32,20 @@ require_once BUDDYKIT_PATH . 'config/config.php';
 
 require_once BUDDYKIT_PATH . 'src/install.php';
 
+
+// Google ReCaptcha.
+require_once BUDDYKIT_PATH . 'src/includes/google-recaptcha/google-recaptcha.php';
+
 // Include our settings api.
 require_once BUDDYKIT_PATH . 'src/includes/optionkit/optionkit-register.php';
-
-
 require_once BUDDYKIT_PATH . 'src/includes/buddykit-settings.php';
 
+// Activity Media.
 require_once BUDDYKIT_PATH . 'src/includes/media/admin-options/admin-options.php';
 require_once BUDDYKIT_PATH . 'src/includes/media/class-media.php';
 
-require_once BUDDYKIT_PATH . 'src/includes/media/profile-tabs/profile-tabs.php';
+
+// Realtime Notifications.
+require_once BUDDYKIT_PATH . 'src/includes/real-time-notifications/admin-options.php';
 require_once BUDDYKIT_PATH . 'src/includes/real-time-notifications/real-time-notifications.php';
 
