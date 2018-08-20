@@ -16,31 +16,31 @@ function buddykit_honeypot_get_decoy_field_id () {
 
 }
 
-function buddykit_security_sfs_verify_email() {
+function buddykit_security_sfs_is_spammer( $email = '' ) {
+
+	if ( empty ( $email ) ) { return false; }
+
 	// setup the URL
-	$url = 'http://api.stopforumspam.org/api';
+	$url = 'http://api.stopforumspam.org/api?email='.urlencode($email).'&json&badtorexit';
 
-	$data = array(
-	    'email' => urlencode("daqmoeq@hentai-games.online"),
-	);
+	$result = wp_remote_get($url);
 
-	$data = http_build_query( $data );
-	if ( ! function_exists( 'curl_init' ) ) {
-		return array();
+	if ( ! $result instanceof WP_Error ) {
+		
+		$result_json = json_decode( $result['body'] );
+		
+		if ( 1 === $result_json->success ) {
+			// Spammer
+			if ( 1 === $result_json->email->appears ) {
+				return true;
+			}
+		} else {
+			return false;
+		}
+		
 	}
-
-	// init the request, set some info, send it and finally close it
-	$ch = curl_init($url);
-
-	curl_setopt($ch, CURLOPT_POST, 1);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-	$result = curl_exec($ch);
-
-	curl_close($ch);
-	print_r($result);die;
-	return $result;
+	
+	return false;
 }
 
 add_action('wp_enqueue_scripts', function(){
@@ -72,17 +72,23 @@ add_action('bp_before_registration_submit_buttons', function(){
 add_action('bp_core_validate_user_signup', function( $result ){
 
 	global $bp;
-
+	
 	$captcha  = filter_input(INPUT_POST, 'g-recaptcha-response', FILTER_SANITIZE_STRING);
 	$honeypot = filter_input(INPUT_POST, 'field_' . buddykit_honeypot_get_decoy_field_id() , FILTER_SANITIZE_STRING);
+	
+	$email = filter_input(INPUT_POST, 'signup_email' , FILTER_SANITIZE_STRING);
 
 	$option_captcha  = (array)get_option('buddykit-security-recaptcha-is-enabled', array());
 	$option_honeypot = (array)get_option('buddykit-security-honey-pot-enabled', array());
 
 	// Check if user is a spammer.
-    $result = buddykit_security_sfs_verify_email();
-    print_r($result);
-    die();
+    $is_spammer = buddykit_security_sfs_is_spammer( $email );
+    
+    if ( $is_spammer ) {
+    	wp_die( 
+    		sprintf( __('There was an error signing up your email: %s. Please contact the administrator.', 'buddykit'), trim( esc_html( $email ) ) ) 
+    	);
+    }
 
 	if ( in_array( 'enabled', $option_captcha ) ) {
 		if ( empty( $captcha ) ) {
