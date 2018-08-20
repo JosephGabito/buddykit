@@ -80,14 +80,19 @@ add_action('bp_core_validate_user_signup', function( $result ){
 
 	$option_captcha  = (array)get_option('buddykit-security-recaptcha-is-enabled', array());
 	$option_honeypot = (array)get_option('buddykit-security-honey-pot-enabled', array());
+	$option_sfs = (array)get_option('buddykit-security-sfs-enabled', array());
 
-	// Check if user is a spammer.
-    $is_spammer = buddykit_security_sfs_is_spammer( $email );
-    
-    if ( $is_spammer ) {
-    	wp_die( 
-    		sprintf( __('There was an error signing up your email: %s. Please contact the administrator.', 'buddykit'), trim( esc_html( $email ) ) ) 
-    	);
+	if ( in_array( 'enabled', $option_sfs)  ) {
+
+		// Check if user is a spammer.
+	    $is_spammer = buddykit_security_sfs_is_spammer( $email );
+	    
+	    if ( $is_spammer ) {
+	    	wp_die( 
+	    		sprintf( __('There was an error signing up your email: %s. Please contact the administrator.', 'buddykit'), trim( esc_html( $email ) ) ) 
+	    	);
+	    }
+
     }
 
 	if ( in_array( 'enabled', $option_captcha ) ) {
@@ -145,7 +150,7 @@ add_action('init', function(){
 	// Create activity media settings.
 	$settings->addSection(array(
 		'id' => 'buddykit-security',
-		'label' => __('Registration Captcha', 'buddykit'),
+		'label' => __('BuddyPress Registration', 'buddykit'),
 		'desc' => __('Safeguard and protect your BuddyPress site against spam bots.', 'buddykit'),
 		'page' => 'buddykit-security'
 	));
@@ -189,6 +194,25 @@ add_action('init', function(){
 		'section' => 'buddykit-security',
 		'default' => array(),
 		'description' => __('Honeypots are invisible fields that are automatically added to your registration form<br/> to prevent spam bots from creating accounts in your website', 'buddykit'),
+		'type' => 'checkbox',
+		'options' => array(
+			'enabled' => __('Enabled', 'buddykit')
+		),
+		'attributes' => array(
+				'size' => 60,
+				'required' => true,
+				'placeholder' => __('e.g. 6Lf_8TMUACABAF6MZ2nlpmnS0eKDeb2nhKeqErYW', 'buddykit')
+			)
+	));
+
+	// Honeypot
+	$settings->addField(array(
+		'id' => 'buddykit-security-sfs-enabled',
+		'title' => __('Enable StopForumSpam API (Beta)','buddykit'),
+		'page' => 'buddykit-security',
+		'section' => 'buddykit-security',
+		'default' => array(),
+		'description' => sprintf(__('%s is a free service that is targeted and is specialized solution to help stop abuse of your website. Check to enable their service to your website. Its effective against spam abuse.', 'buddykit'), '<a href="https://www.stopforumspam.com/" target="_blank">'.__('Stop Forum Spam', 'buddykit').'</a>'),
 		'type' => 'checkbox',
 		'options' => array(
 			'enabled' => __('Enabled', 'buddykit')
