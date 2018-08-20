@@ -81,15 +81,11 @@ function buddykit_real_time_notifications_get_notification( $notification ) {
 	} else {
 		/** This filter is documented in bp-notifications/bp-notifications-functions.php */
 		$description = apply_filters_ref_array( 'bp_notifications_get_notifications_for_user',
-			array(
-			$notification->component_action,
-				$notification->item_id,
-			$notification->secondary_item_id,
-			1,
-				 'string',
-			$notification->component_action,
-			$notification->component_name,
-			$notification->id,
+			array( $notification->component_action, $notification->item_id,
+				$notification->secondary_item_id, 1,
+				'string', $notification->component_action,
+				$notification->component_name,
+				$notification->id,
 			)
 		);
 	}
@@ -109,28 +105,25 @@ function buddykit_pusher_push_notification( $notification ) {
 		return;
 	}
 
+	// Parse old settings.
 	$options = wp_parse_args( get_option( 'buddykit_settings' ), array(
-			'buddykit_rtn_is_enabled' => 0,
 			'buddykit_rtn_pusher_key' => '',
 			'buddykit_rtn_pusher_app_id' => '',
 			'buddykit_rtn_pusher_secret' => '',
 			'buddykit_rtn_pusher_cluster' => '',
 		));
 
-	if ( empty( $options ) ) {
+	// Check if realtime notifications is enabled or disabled.
+	$components = (array) get_option( 'buddykit-components', array('activity-media', 'realtime-notifications') );
+
+	if ( ! in_array('realtime-notifications', $components ) ) {
 		return;
 	}
 
-	$is_enabled = $options['buddykit_rtn_is_enabled'];
-
-	if ( ! $is_enabled ) {
-		return;
-	}
-
-	$key        = $options['buddykit_rtn_pusher_key'];
-	$secret     = $options['buddykit_rtn_pusher_secret'];
-	$app_id     = $options['buddykit_rtn_pusher_app_id'];
-	$cluster    = $options['buddykit_rtn_pusher_cluster'];
+	$app_id     = get_option('buddykit-rtn-pusher-app-id', $options['buddykit_rtn_pusher_app_id']);
+	$key        = get_option('buddykit-rtn-pusher-key', $options['buddykit_rtn_pusher_key']);
+	$secret     = get_option('buddykit-rtn-pusher-secret', $options['buddykit_rtn_pusher_secret']);
+	$cluster    = get_option('buddykit-rtn-pusher-cluster', $options['buddykit_rtn_pusher_cluster']);
 
 	require_once __DIR__ . '/vendor/autoload.php';
 
@@ -149,173 +142,5 @@ function buddykit_pusher_push_notification( $notification ) {
 		)
 	);
 
-	return;
-}
-
-
-add_action('buddykit_settings_tab_fields', function(){
-
-	add_settings_section(
-		'buddykit_section_media',
-		'Pusher',
-		'buddykit_section_rtn_view',
-		'buddykit-settings.php'
-	);
-
-	// Enable/disable Live Notifications.
-	add_settings_field(
-		'buddykit_rtn_is_enabled', // The field ID.
-		'Enable Live Notifications', // The label.
-		'buddykit_rtn_pusher_check_view', // Callback view.
-		'buddykit-settings.php', // Under what settings.
-		'buddykit_section_media', // Section.
-		[
-				'label_for' => 'buddykit_rtn_is_enabled',
-				'class' => 'buddykit_rtn_is_enabled_row',
-				'default' => '',
-				'description' => __( 'Check to enable the live notifications. Uncheck to disable.', 'buddykit' ),
-			]
-	);
-
-	// App Key.
-	add_settings_field(
-		'buddykit_rtn_pusher_key', // The field ID.
-		'Pusher Key', // The label.
-		'buddykit_rtn_pusher_text_view', // Callback view.
-		'buddykit-settings.php', // Under what settings?
-		'buddykit_section_media', // Section.
-		[
-				'label_for' => 'buddykit_rtn_pusher_key',
-				'class' => 'buddykit_rtn_pusher_key_row',
-				'default' => '',
-				'description' => __( 'Pusher API key', 'buddykit' ),
-			]
-	);
-	// App ID.
-	add_settings_field(
-		'buddykit_rtn_pusher_app_id', // The field ID.
-		'Pusher APP ID', // The label.
-		'buddykit_rtn_pusher_text_view', // Callback view.
-		'buddykit-settings.php', // Under what settings?
-		'buddykit_section_media', // Section.
-		[
-				'label_for' => 'buddykit_rtn_pusher_app_id',
-				'class' => 'buddykit_rtn_pusher_app_id_row',
-				'default' => '',
-				'description' => __( 'Enter your Pusher App ID', 'buddykit' ),
-			]
-	);
-
-	// Secret Key.
-	add_settings_field(
-		'buddykit_rtn_pusher_secret', // The field ID.
-		'Pusher Secret', // The label.
-		'buddykit_rtn_pusher_text_view', // Callback view.
-		'buddykit-settings.php', // Under what settings?
-		'buddykit_section_media', // Section.
-		[
-				'label_for' => 'buddykit_rtn_pusher_secret',
-				'class' => 'buddykit_rtn_pusher_secret_row',
-				'default' => '',
-				'description' => __( 'Enter your Pusher Secret Token', 'buddykit' ),
-			]
-	);
-	// Cluster.
-	add_settings_field(
-		'buddykit_rtn_pusher_cluster', // The field ID.
-		'Pusher Cluster', // The label.
-		'buddykit_rtn_pusher_text_view', // Callback view.
-		'buddykit-settings.php', // Under what settings?
-		'buddykit_section_media', // Section.
-		[
-				'label_for' => 'buddykit_rtn_pusher_cluster',
-				'class' => 'buddykit_rtn_pusher_key_row',
-				'default' => '',
-				'description' => __( 'Enter your Cluster ID', 'buddykit' ),
-			]
-	);
-});
-
-/**
- * Some explainer text regarding the use of Pusher.
- *
- * @return void
- */
-function buddykit_section_rtn_view() {
-	echo '<div class="">';
-	echo '<p>';
-		$pusher_link = '<a target="_blank" href="'.esc_attr__('https://pusher.com/', 'buddykit').'" title="'.esc_attr__('Pusher', 'buddykit').'">'.esc_html__('Pusher', 'buddykit').'</a>';
-		echo sprintf( __('BuddyKit uses %s to serve your real-time notifications.', 'buddykit'), $pusher_link );
-		echo '&nbsp;';
-		echo sprintf( esc_html__('%s in Pusher website, then create a Channels app. Go to the "Keys" page for that app, and make a note of your app_id, key, secret and cluster.', 'buddykit'), '<a href="'.esc_url('https://dashboard.pusher.com/accounts/sign_up').'" title="'.__('Create an account','buddykit').'" target="_blank">'.__('Create an account','buddykit').'</a>');
-	echo '</p>';
-
-	echo '<hr/>';
-
-	echo '</div>';
-}
-
-/**
- * Callback view for live notifications enable/disable.
- *
- * @param  array $args The field arguments.
- * @return void
- */
-function buddykit_rtn_pusher_check_view( $args ) {
-
-	$options = wp_parse_args( get_option( 'buddykit_settings' ), array(
-		'buddykit_rtn_is_enabled' => '',
-	));
-
-	$checked = $options['buddykit_rtn_is_enabled'];
-	$current = '1';
-	$echo = true;
-
-	?>
-        <input id="<?php echo esc_attr( $args['label_for'] ); ?>" 
-        type="checkbox" name="buddykit_settings[<?php echo esc_attr( $args['label_for'] ); ?>]" 
-        <?php checked( $checked, $current, $echo ); ?> value="1"
-        />
-        <label for="<?php echo esc_attr( $args['label_for'] ); ?>">
-            <span class="description">
-                <?php echo esc_html( $args['description'] ); ?><br/>
-            </span>
-        </label>
-    <?php
-	return;
-}
-
-/**
- * Callback view for pusher credentials.
- *
- * @param  array $args The field arguments.
- * @return void
- */
-
-function buddykit_rtn_pusher_text_view( $args ) {
-
-	$options = wp_parse_args( get_option( 'buddykit_settings' ), array(
-		'buddykit_rtn_pusher_key' => '',
-		'buddykit_rtn_pusher_app_id' => '',
-		'buddykit_rtn_pusher_secret' => '',
-		'buddykit_rtn_pusher_cluster' => '',
-	));
-
-	$option_value = esc_attr( $args['default'] );
-
-	if ( ! empty( $options[ $args['label_for'] ] ) ) {
-		$option_value = $options[ $args['label_for'] ];
-	}
-
-	?>
-    <input id="<?php echo esc_attr( $args['label_for'] ); ?>" 
-    type="text" name="buddykit_settings[<?php echo esc_attr( $args['label_for'] ); ?>]" 
-    value="<?php echo esc_attr( $option_value ) ?>" 
-    />
-
-    <p class="description">
-        <?php echo esc_html( $args['description'] ); ?><br/>
-    </p>
-    <?php
 	return;
 }
