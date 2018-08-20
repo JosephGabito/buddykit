@@ -24,10 +24,22 @@ function buddykit_security_sfs_verify_email() {
 	    'email' => urlencode("daqmoeq@hentai-games.online"),
 	);
 
-	$result = wp_remote_get( $url, $data );
-	echo '<pre>';
-	print_r($result['body']);
-	die;
+	$data = http_build_query( $data );
+	if ( ! function_exists( 'curl_init' ) ) {
+		return array();
+	}
+
+	// init the request, set some info, send it and finally close it
+	$ch = curl_init($url);
+
+	curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+	$result = curl_exec($ch);
+
+	curl_close($ch);
+	print_r($result);die;
 	return $result;
 }
 
