@@ -32,7 +32,10 @@ function buddykit_config_settings_default() {
  * @return array The parsed config options.
  */
 function buddykit_config_get_option() {
-	$options = wp_parse_args( get_option( 'buddykit_settings' ), buddykit_config_settings_default() );
+	$options = wp_parse_args( array(
+			'buddykit_rtn_pusher_key' => get_option('buddykit-rtn-pusher-key'),
+			'buddykit_rtn_pusher_cluster' => get_option('buddykit-rtn-pusher-cluster'),
+		), buddykit_config_settings_default() );
 	return $options;
 }
 
@@ -45,10 +48,6 @@ function buddykit_config() {
 	$options = buddykit_config_get_option();
 	$field_max_size = $options['buddykit_field_max_image_size'];
 	$max_upload_size = $field_max_size * 1000000; // 10MB
-
-	// !Important Remove secret keys.
-	unset( $options['buddykit_rtn_pusher_secret'] );
-	unset( $options['buddykit_rtn_pusher_app_id'] );
 
 	return array(
 		'root' => esc_url_raw( rest_url() ),
