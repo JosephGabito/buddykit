@@ -15,6 +15,7 @@ add_action('init', function(){
 	if ( ! in_array('activity-media', $components ) ) {
 		return;
 	}
+	
 	$settings = optionkit();
 
 	// Creates a submenu inside our newly created top level menu.
