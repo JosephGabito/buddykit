@@ -126,15 +126,16 @@ class BuddyKitFileAttachment {
 
 	/**
 	 * Changes the filename on update for integrity.
+	 *
 	 * @param  array $file The file.
 	 * @return array The file.
 	 */
 	public function buddykit_on_upload_change_file_name( $file ) {
 		$ext = pathinfo( $file['name'], PATHINFO_EXTENSION );
-		$file['name'] = md5( time().$file['name'] ).'.'.$ext;
+		$file['name'] = md5( time() . $file['name'] ) . '.' . $ext;
 		return $file;
 	}
-	
+
 	/**
 	 * Delete the file under a specific task.
 	 *
@@ -163,6 +164,7 @@ class BuddyKitFileAttachment {
 
 	/**
 	 * Removes temporary media files and updates the status in the database.
+	 *
 	 * @param  integer $user_id The user id.
 	 * @return boolean True on success. Otherwise, false.
 	 */
@@ -198,25 +200,25 @@ class BuddyKitFileAttachment {
 			$fs->mkdir( $destination_path );
 
 			if ( $fs->is_dir( $destination_path ) ) {
-				
-				$finfo = finfo_open(FILEINFO_MIME_TYPE); // return mime type ala mimetype extension
+
+				$finfo = finfo_open( FILEINFO_MIME_TYPE ); // return mime type ala mimetype extension.
 
 				foreach ( $tmp_files as $file ) {
 
 					// Read the file source.
 					$file_source = $source_path . $file['name'];
 
-					$mimetype =  finfo_file($finfo, $file_source);
+					$mimetype = finfo_file( $finfo, $file_source );
 
-					// Video
+					// Video.
 					if ( strpos( $mimetype, 'video' ) !== false ) {
-						
+
 						$file_destination = $destination_path . $file['name'];
 						$fs->copy( $file_source, $file_destination );
 
 					} else {
-						
-					// Image
+
+						// Image
 						// Edit the image.
 						$image = wp_get_image_editor( $file_source );
 
@@ -246,8 +248,6 @@ class BuddyKitFileAttachment {
 						$fs->copy( $file_source, $file_destination );
 						$fs->copy( $thumbnail_source, $thumbnail_final_path );
 					}
-					
-
 				}
 				// Delete the temporary directory.
 				$fs->rmdir( $source_path, $recursive = true );
@@ -267,6 +267,7 @@ class BuddyKitFileAttachment {
 
 	/**
 	 * Returns the current logged-in user file path.
+	 *
 	 * @param  string  $name The file name.
 	 * @param  boolean $is_tmp If directory is temporary or not.
 	 */
@@ -282,7 +283,7 @@ class BuddyKitFileAttachment {
 
 		$uploads = $is_tmp ? 'tmp': 'uploads';
 
-		$file = $upload_dir .'/'. absint( get_current_user_id() ) .'/'. $uploads .'/'.$name;
+		$file = $upload_dir . '/' . absint( get_current_user_id() ) . '/' . $uploads . '/' . $name;
 
 		return $file;
 
@@ -323,24 +324,40 @@ class BuddyKitFileAttachment {
 
 	/**
 	 * Returns the user's upload directory
+	 *
 	 * @param  integer $user_id The id of the user.
 	 * @param  boolean $is_tmp If directory is temporary or not.
+	 * @param  integer $site_id Pass the current blog id to support multisite.
 	 * @return string The upload directory of the user.
 	 */
-	public static function get_user_uploads_url( $user_id = 0, $is_tmp = false ) {
+	public static function get_user_uploads_url( $user_id = 0, $is_tmp = false, $site_id = 0 ) {
 
 		if ( empty( $user_id ) ) {
 			return false;
 		}
 
 		$uploads_dir = wp_upload_dir();
+
 		$dir = '/uploads/';
+
 		if ( $is_tmp ) {
 			$dir = '/tmp/';
 		}
+
 		$user_uploads_dir = $uploads_dir['baseurl'] . '/buddykit/' . $user_id . $dir;
 
-		return $user_uploads_dir;
+		// Add support for multitesite.
+		if ( is_multisite() ) {
+			// @todo
+			if ( 1 === $site_id ) {
+				$user_uploads_dir = network_site_url( 'wp-content/uploads/buddykit/' . $user_id . $dir );
+			} else // Sub websites for multisite.
+			{
+				$user_uploads_dir = network_site_url( 'wp-content/uploads/sites/' . $site_id . '/buddykit/' . $user_id . $dir );
+			}
+		}
+
+		return apply_filters( 'buddykit_user_upload_dir', $user_uploads_dir );
 
 	}
 
